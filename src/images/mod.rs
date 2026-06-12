@@ -17,10 +17,7 @@ pub enum DockerError {
 }
 
 pub fn list() -> Result<Vec<Image>> {
-    let res = Command::new("docker")
-        .args(["image", "list", "--format", "json", "--no-trunc"])
-        .output()
-        .with_context(|| "Failed spawning docker, make sure docker is installed")?;
+    let res = docker!("image", "list", "--format", "json", "--no-trunc");
     if !res.status.success() {
         DockerError::CommandError(
             res.status.code(),
