@@ -1,6 +1,6 @@
 #[macro_use]
 mod utils;
-mod images;
+mod image;
 mod prelude;
 
 use prelude::*;
