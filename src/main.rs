@@ -2,6 +2,7 @@
 mod utils;
 mod image;
 mod prelude;
+mod project;
 
 use prelude::*;
 
