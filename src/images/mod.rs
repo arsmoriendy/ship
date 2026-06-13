@@ -19,7 +19,7 @@ pub struct RawImage {
 }
 
 pub struct Image {
-    pub name: String,
+    pub project: String,
     pub containers: u64,
     pub id: [u8; 32],
     pub tags: Vec<String>,
@@ -46,7 +46,7 @@ impl TryFrom<&RawImage> for Image {
     type Error = ParseImageError;
     fn try_from(raw: &RawImage) -> Result<Self, Self::Error> {
         Ok(Image {
-            name: raw
+            project: raw
                 .repository
                 .split("/")
                 .last()
