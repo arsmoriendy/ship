@@ -5,7 +5,7 @@ pub struct Auth {}
 
 #[derive(Deserialize, Debug)]
 pub struct DockerConfig {
-    auths: HashMap<String, Auth>,
+    pub auths: HashMap<String, Auth>,
 }
 
 #[derive(Error, Debug)]
