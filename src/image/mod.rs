@@ -65,6 +65,12 @@ impl TryFrom<&RawImage> for Image {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum DockerError {
+    #[error("error calling the docker command, status: {0:?}, stderr: \"{1}\"")]
+    CommandError(Option<i32>, String),
+}
+
 impl Image {
     fn parse_id(id: &str) -> Result<[u8; 32]> {
         let vec: Vec<u8> = (7..id.len())
@@ -75,44 +81,38 @@ impl Image {
             .try_into()
             .map_err(|_| ParseImageError::ParseIdError(id.to_owned()))?)
     }
-}
 
-#[derive(Error, Debug)]
-pub enum DockerError {
-    #[error("error calling the docker command, status: {0:?}, stderr: \"{1}\"")]
-    CommandError(Option<i32>, String),
-}
+    pub fn list() -> Result<Vec<Image>> {
+        let res = docker!("image", "list", "--format", "json", "--no-trunc", "--all");
+        if !res.status.success() {
+            DockerError::CommandError(
+                res.status.code(),
+                String::from_utf8(res.stderr).with_context(|| "Failed parsing stderr")?,
+            );
+        }
+        let out = res.stdout;
+        let out_str = String::from_utf8(out).with_context(|| "Failed parsing stdout")?;
+        let mut img_strs = out_str.split("\n").peekable();
 
-pub fn list() -> Result<Vec<Image>> {
-    let res = docker!("image", "list", "--format", "json", "--no-trunc", "--all");
-    if !res.status.success() {
-        DockerError::CommandError(
-            res.status.code(),
-            String::from_utf8(res.stderr).with_context(|| "Failed parsing stderr")?,
-        );
-    }
-    let out = res.stdout;
-    let out_str = String::from_utf8(out).with_context(|| "Failed parsing stdout")?;
-    let mut img_strs = out_str.split("\n").peekable();
-
-    let mut images: Vec<Image> = vec![];
-    loop {
-        if let Some(img_str) = img_strs.next()
+        let mut images: Vec<Image> = vec![];
+        loop {
+            if let Some(img_str) = img_strs.next()
         // ignore last string, i.e, trailing "\n"
             && img_strs.peek().is_some()
-        {
-            let raw = serde_json::from_str::<RawImage>(img_str)
-                .with_context(|| "Failed to parse image")?;
-            let id = Image::parse_id(&raw.id).with_context(|| "Failed to parse image id")?;
-            if let Some(img) = images.iter_mut().find(|img| img.id == id) {
-                img.tags.push(raw.tag);
-            } else {
-                images.push((&raw).try_into().with_context(|| "Failed to parse image")?)
+            {
+                let raw = serde_json::from_str::<RawImage>(img_str)
+                    .with_context(|| "Failed to parse image")?;
+                let id = Image::parse_id(&raw.id).with_context(|| "Failed to parse image id")?;
+                if let Some(img) = images.iter_mut().find(|img| img.id == id) {
+                    img.tags.push(raw.tag);
+                } else {
+                    images.push((&raw).try_into().with_context(|| "Failed to parse image")?)
+                }
+                continue;
             }
-            continue;
+            break;
         }
-        break;
-    }
 
-    Ok(images)
+        Ok(images)
+    }
 }
