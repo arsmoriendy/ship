@@ -19,7 +19,6 @@ pub struct RawImage {
 }
 
 pub struct Image {
-    pub project: String,
     pub containers: u64,
     pub id: [u8; 32],
     pub tags: Vec<String>,
@@ -47,19 +46,11 @@ impl TryFrom<&RawImage> for Image {
     type Error = ParseImageError;
     fn try_from(raw: &RawImage) -> Result<Self, Self::Error> {
         Ok(Image {
-            project: raw
-                .repository
-                .split("/")
-                .last()
-                .ok_or(ParseImageError::ParseRepositoryError(
-                    raw.repository.clone(),
-                ))?
-                .to_owned(),
             containers: raw
                 .containers
                 .parse()
                 .map_err(|_| ParseImageError::ParseContainersError(raw.containers.clone()))?,
-            id: parse_id(raw.id.as_str())
+            id: Image::parse_id(raw.id.as_str())
                 .map_err(|_| ParseImageError::ParseIdError(raw.id.clone()))?,
 
             tags: vec![raw.tag.clone()],
@@ -74,14 +65,16 @@ impl TryFrom<&RawImage> for Image {
     }
 }
 
-fn parse_id(id: &str) -> Result<[u8; 32]> {
-    let vec: Vec<u8> = (7..id.len())
-        .step_by(2)
-        .map(|i| u8::from_str_radix(&id[i..i + 2], 16))
-        .collect::<Result<Vec<u8>, ParseIntError>>()?;
-    Ok(vec
-        .try_into()
-        .map_err(|_| ParseImageError::ParseIdError(id.to_owned()))?)
+impl Image {
+    fn parse_id(id: &str) -> Result<[u8; 32]> {
+        let vec: Vec<u8> = (7..id.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&id[i..i + 2], 16))
+            .collect::<Result<Vec<u8>, ParseIntError>>()?;
+        Ok(vec
+            .try_into()
+            .map_err(|_| ParseImageError::ParseIdError(id.to_owned()))?)
+    }
 }
 
 #[derive(Error, Debug)]
@@ -110,7 +103,7 @@ pub fn list() -> Result<Vec<Image>> {
         {
             let raw = serde_json::from_str::<RawImage>(img_str)
                 .with_context(|| "Failed to parse image")?;
-            let id = parse_id(&raw.id).with_context(|| "Failed to parse image id")?;
+            let id = Image::parse_id(&raw.id).with_context(|| "Failed to parse image id")?;
             if let Some(img) = images.iter_mut().find(|img| img.id == id) {
                 img.tags.push(raw.tag);
             } else {
