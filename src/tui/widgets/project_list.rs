@@ -13,7 +13,7 @@ impl App {
                 format!(" ({} images) ", proj.images.len()).fg(Color::LightGreen),
             ];
             if let Some(registry) = self.config.project_registries.get(&proj.name) {
-                spans.push(format!("[{}]", registry).fg(Color::Magenta))
+                spans.push(format!("[{}]", registry).fg(Color::Yellow))
             }
             lines.push(Line::from(spans))
         }
