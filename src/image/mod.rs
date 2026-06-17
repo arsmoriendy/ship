@@ -18,6 +18,7 @@ pub struct RawImage {
     pub unique_size: String,
 }
 
+#[derive(Debug)]
 pub struct Image {
     pub containers: u64,
     pub id: [u8; 32],
@@ -106,7 +107,13 @@ impl Image {
                 if let Some(img) = images.iter_mut().find(|img| img.id == id) {
                     img.tags.insert(raw.tag);
                 } else {
-                    images.push((&raw).try_into().with_context(|| "Failed to parse image")?)
+                    let parsed: Image =
+                        (&raw).try_into().with_context(|| "Failed to parse image")?;
+                    let pos = match images.binary_search_by(|img| img.id.cmp(&parsed.id)) {
+                        Ok(p) => p,
+                        Err(p) => p,
+                    };
+                    images.insert(pos, parsed);
                 }
                 continue;
             }

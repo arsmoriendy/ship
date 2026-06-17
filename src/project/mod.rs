@@ -34,6 +34,8 @@ impl Project {
                 project_names.insert(project_name.to_owned(), new_project);
             }
         }
-        Ok(project_names.into_values().collect::<Vec<Project>>())
+        let mut projects = project_names.into_values().collect::<Vec<Project>>();
+        projects.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(projects)
     }
 }
