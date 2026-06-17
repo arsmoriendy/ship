@@ -13,7 +13,7 @@ impl Project {
         }
     }
 
-    fn get_project_name(repository: &str) -> Result<&str> {
+    pub fn get_project_name(repository: &str) -> Result<&str> {
         Ok(repository
             .split("/")
             .last()

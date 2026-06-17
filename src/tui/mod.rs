@@ -2,9 +2,9 @@ mod prelude;
 mod widgets;
 
 use crate::config::Config;
-use crate::prelude::*;
 use crate::project::Project;
 use crate::utils::docker_config::{DockerConfig, parse};
+use crate::{prelude::*, relation};
 use prelude::*;
 
 #[derive(PartialEq)]
@@ -44,6 +44,7 @@ impl App {
 
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
         while !self.exit {
+            terminal.clear()?;
             terminal.draw(|frame| self.draw(frame))?;
             self.handle_events()?;
         }
@@ -108,6 +109,13 @@ impl App {
                     )
                 }
                 KeyCode::Char('H') | KeyCode::Backspace => self.focus = Focus::Projects,
+                KeyCode::Char('P') => {
+                    let project = &self.projects[self.selected_project];
+                    let Some(reg) = &self.config.project_registries.get(&project.name) else {
+                        return Ok(());
+                    };
+                    relation::push(&project.images[self.selected_image], reg)?;
+                }
                 _ => {}
             },
             _ => {}

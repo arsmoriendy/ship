@@ -5,6 +5,7 @@ mod image;
 mod prelude;
 mod project;
 mod registry;
+mod relation;
 mod tui;
 
 use prelude::*;
