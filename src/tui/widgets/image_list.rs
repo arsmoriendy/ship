@@ -1,8 +1,8 @@
 use crate::prelude::*;
+use crate::tui::App;
 use crate::tui::Focus;
 pub use crate::tui::prelude::*;
 use crate::tui::widgets::focusable::{focus_block, focus_list};
-use crate::{image::Image, tui::App};
 
 impl App {
     pub fn image_list<'a>(&self) -> List<'a> {
@@ -11,7 +11,7 @@ impl App {
             lines.push(Line::from(vec![
                 encode_hex(img.id)[0..8].to_owned().light_green(),
                 Span::from(" "),
-                Span::from(img.tags.join(", ")),
+                Span::from(img.tags.iter().cloned().collect::<Vec<String>>().join(", ")),
             ]))
         }
         let is_focused = self.focus == Focus::Images;

@@ -21,7 +21,7 @@ pub struct RawImage {
 pub struct Image {
     pub containers: u64,
     pub id: [u8; 32],
-    pub tags: Vec<String>,
+    pub tags: HashSet<String>,
 
     pub created_at: String,
     pub created_since: String,
@@ -53,7 +53,7 @@ impl TryFrom<&RawImage> for Image {
             id: Image::parse_id(raw.id.as_str())
                 .map_err(|_| ParseImageError::ParseIdError(raw.id.clone()))?,
 
-            tags: vec![raw.tag.clone()],
+            tags: HashSet::from([raw.tag.clone()]),
             created_at: raw.created_at.clone(),
             created_since: raw.created_since.clone(),
             digest: raw.digest.clone(),
@@ -104,7 +104,7 @@ impl Image {
                     .with_context(|| "Failed to parse image")?;
                 let id = Image::parse_id(&raw.id).with_context(|| "Failed to parse image id")?;
                 if let Some(img) = images.iter_mut().find(|img| img.id == id) {
-                    img.tags.push(raw.tag);
+                    img.tags.insert(raw.tag);
                 } else {
                     images.push((&raw).try_into().with_context(|| "Failed to parse image")?)
                 }
