@@ -8,7 +8,7 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Result<Self> {
-        let project_dirs = directories::ProjectDirs::from("top", "nugs", "ordo")
+        let project_dirs = directories::ProjectDirs::from("top", "nugs", "ship")
             .ok_or(anyhow!("failed to parse project directories"))?;
         let config_str = fs::read_to_string(project_dirs.config_dir().join("config.json"))
             .with_context(|| "failed to read config file")?;
