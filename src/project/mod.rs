@@ -1,8 +1,8 @@
 use crate::{image::Image, prelude::*};
 
-struct Project {
-    name: String,
-    images: Vec<Image>,
+pub struct Project {
+    pub name: String,
+    pub images: Vec<Image>,
 }
 
 impl Project {
@@ -24,11 +24,14 @@ impl Project {
         let mut project_names: HashMap<String, Project> = HashMap::new();
         let images = Image::list()?;
         for img in images {
-            let project_name = Project::get_project_name(img.repository.as_str())?;
+            let repo = img.repository.clone();
+            let project_name = Project::get_project_name(repo.as_str())?;
             if let Some(project) = project_names.get_mut(project_name) {
                 project.images.push(img)
             } else {
-                project_names.insert(project_name.to_owned(), Project::new(project_name));
+                let mut new_project = Project::new(project_name);
+                new_project.images.push(img);
+                project_names.insert(project_name.to_owned(), new_project);
             }
         }
         Ok(project_names.into_values().collect::<Vec<Project>>())

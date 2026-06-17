@@ -1,0 +1,121 @@
+mod prelude;
+mod widgets;
+
+use crate::config::Config;
+use crate::prelude::*;
+use crate::project::Project;
+use crate::utils::docker_config::{DockerConfig, parse};
+use prelude::*;
+
+#[derive(PartialEq)]
+pub enum Focus {
+    Projects,
+    Images,
+}
+
+pub struct App {
+    pub projects: Vec<Project>,
+    pub docker_config: DockerConfig,
+    pub config: Config,
+
+    pub exit: bool,
+
+    pub selected_project: usize,
+    pub selected_image: usize,
+
+    pub focus: Focus,
+}
+
+impl App {
+    pub fn new() -> Result<Self> {
+        let docker_config = parse()?;
+        let projects = Project::list()?;
+        let config = Config::new()?;
+        Ok(App {
+            projects,
+            docker_config,
+            config,
+            exit: false,
+            selected_project: 0,
+            selected_image: 0,
+            focus: Focus::Projects,
+        })
+    }
+
+    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
+        while !self.exit {
+            terminal.draw(|frame| self.draw(frame))?;
+            self.handle_events()?;
+        }
+        Ok(())
+    }
+
+    fn draw(&self, frame: &mut Frame) {
+        frame.render_widget(self, frame.area());
+    }
+
+    fn exit(&mut self) {
+        self.exit = true;
+    }
+
+    fn handle_events(&mut self) -> Result<()> {
+        match event::read()? {
+            Event::Key(ke) if ke.kind == KeyEventKind::Press => self.handle_key_events(ke)?,
+            _ => {}
+        }
+        Ok(())
+    }
+
+    fn handle_key_events(&mut self, ke: KeyEvent) -> Result<()> {
+        match self.focus {
+            Focus::Projects => match ke.code {
+                KeyCode::Char('j') | KeyCode::Down => {
+                    self.selected_project = self
+                        .selected_project
+                        .saturating_add(1)
+                        .clamp(0, self.projects.len().saturating_sub(1).try_into()?);
+                    self.selected_image = 0
+                }
+                KeyCode::Char('k') | KeyCode::Up => {
+                    self.selected_project = self
+                        .selected_project
+                        .saturating_sub(1)
+                        .clamp(0, self.projects.len().saturating_sub(1).try_into()?);
+                    self.selected_image = 0
+                }
+                KeyCode::Char('L') | KeyCode::Enter => self.focus = Focus::Images,
+                _ => {}
+            },
+            Focus::Images => match ke.code {
+                KeyCode::Char('j') | KeyCode::Down => {
+                    self.selected_image = self.selected_image.saturating_add(1).clamp(
+                        0,
+                        self.projects[self.selected_project]
+                            .images
+                            .len()
+                            .saturating_sub(1)
+                            .try_into()?,
+                    )
+                }
+                KeyCode::Char('k') | KeyCode::Up => {
+                    self.selected_image = self.selected_image.saturating_sub(1).clamp(
+                        0,
+                        self.projects[self.selected_project]
+                            .images
+                            .len()
+                            .saturating_sub(1)
+                            .try_into()?,
+                    )
+                }
+                KeyCode::Char('H') | KeyCode::Backspace => self.focus = Focus::Projects,
+                _ => {}
+            },
+            _ => {}
+        }
+        match ke.code {
+            KeyCode::Char('q') => self.exit(),
+            _ => {}
+        }
+        Ok(())
+    }
+}
