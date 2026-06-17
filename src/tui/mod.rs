@@ -42,6 +42,17 @@ impl App {
         })
     }
 
+    pub fn refresh(&mut self) -> Result<()> {
+        let docker_config = parse()?;
+        let projects = Project::list()?;
+        let config = Config::new()?;
+
+        self.docker_config = docker_config;
+        self.projects = projects;
+        self.config = config;
+        Ok(())
+    }
+
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
         while !self.exit {
             terminal.clear()?;
@@ -115,13 +126,14 @@ impl App {
                         return Ok(());
                     };
                     relation::push(&project.images[self.selected_image], reg)?;
+                    self.refresh()?
                 }
                 _ => {}
             },
-            _ => {}
         }
         match ke.code {
             KeyCode::Char('q') => self.exit(),
+            KeyCode::Char('r') => self.refresh()?,
             _ => {}
         }
         Ok(())
