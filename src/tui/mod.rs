@@ -3,7 +3,6 @@ mod widgets;
 
 use crate::config::Config;
 use crate::project::Project;
-use crate::utils::docker_config::{DockerConfig, parse};
 use crate::{prelude::*, relation};
 use prelude::*;
 
@@ -15,7 +14,6 @@ pub enum Focus {
 
 pub struct App {
     pub projects: Vec<Project>,
-    pub docker_config: DockerConfig,
     pub config: Config,
 
     pub exit: bool,
@@ -28,12 +26,10 @@ pub struct App {
 
 impl App {
     pub fn new() -> Result<Self> {
-        let docker_config = parse()?;
         let projects = Project::list()?;
         let config = Config::new()?;
         Ok(App {
             projects,
-            docker_config,
             config,
             exit: false,
             selected_project: 0,
@@ -43,11 +39,9 @@ impl App {
     }
 
     pub fn refresh(&mut self) -> Result<()> {
-        let docker_config = parse()?;
         let projects = Project::list()?;
         let config = Config::new()?;
 
-        self.docker_config = docker_config;
         self.projects = projects;
         self.config = config;
         Ok(())
