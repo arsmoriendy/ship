@@ -21,21 +21,19 @@ impl Project {
     }
 
     pub fn list() -> Result<Vec<Project>> {
-        let mut project_names: HashMap<String, Project> = HashMap::new();
+        let mut projects: Vec<Project> = vec![];
         let images = Image::list()?;
         for img in images {
             let repo = img.repository.clone();
             let project_name = Project::get_project_name(repo.as_str())?;
-            if let Some(project) = project_names.get_mut(project_name) {
+            if let Some(project) = projects.iter_mut().find(|p| p.name == project_name) {
                 project.images.push(img)
             } else {
                 let mut new_project = Project::new(project_name);
                 new_project.images.push(img);
-                project_names.insert(project_name.to_owned(), new_project);
+                projects.push(new_project);
             }
         }
-        let mut projects = project_names.into_values().collect::<Vec<Project>>();
-        projects.sort_by(|a, b| a.name.cmp(&b.name));
         Ok(projects)
     }
 }
