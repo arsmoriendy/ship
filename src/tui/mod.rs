@@ -49,9 +49,11 @@ impl App {
 
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
         while !self.exit {
-            terminal.clear()?;
             terminal.draw(|frame| self.draw(frame))?;
-            self.handle_events()?;
+            let should_clear = self.handle_events()?;
+            if should_clear {
+                terminal.clear()?;
+            }
         }
         Ok(())
     }
@@ -64,15 +66,14 @@ impl App {
         self.exit = true;
     }
 
-    fn handle_events(&mut self) -> Result<()> {
+    fn handle_events(&mut self) -> Result<bool> {
         match event::read()? {
-            Event::Key(ke) if ke.kind == KeyEventKind::Press => self.handle_key_events(ke)?,
-            _ => {}
+            Event::Key(ke) if ke.kind == KeyEventKind::Press => Ok(self.handle_key_events(ke)?),
+            _ => Ok(false),
         }
-        Ok(())
     }
 
-    fn handle_key_events(&mut self, ke: KeyEvent) -> Result<()> {
+    fn handle_key_events(&mut self, ke: KeyEvent) -> Result<bool> {
         match self.focus {
             Focus::Projects => match ke.code {
                 KeyCode::Char('j') | KeyCode::Down => {
@@ -117,19 +118,23 @@ impl App {
                 KeyCode::Char('P') => {
                     let project = &self.projects[self.selected_project];
                     let Some(reg) = &self.config.project_registries.get(&project.name) else {
-                        return Ok(());
+                        return Ok(false);
                     };
                     relation::push(&project.images[self.selected_image], reg)?;
-                    self.refresh()?
+                    self.refresh()?;
+                    return Ok(true);
                 }
                 _ => {}
             },
         }
         match ke.code {
             KeyCode::Char('q') => self.exit(),
-            KeyCode::Char('r') => self.refresh()?,
+            KeyCode::Char('r') => {
+                self.refresh()?;
+                return Ok(true);
+            }
             _ => {}
         }
-        Ok(())
+        Ok(false)
     }
 }
