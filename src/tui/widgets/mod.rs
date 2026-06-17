@@ -16,10 +16,6 @@ impl Widget for &App {
             .direction(Horizontal)
             .constraints(vec![Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)])
             .split(area);
-        let v_layout = Layout::default()
-            .direction(Vertical)
-            .constraints(vec![Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)])
-            .split(h_layout[1]);
 
         StatefulWidget::render(
             self.project_list(),
@@ -30,7 +26,7 @@ impl Widget for &App {
 
         StatefulWidget::render(
             self.image_list(),
-            v_layout[0],
+            h_layout[1],
             buf,
             &mut ListState::default().with_selected(Some(self.selected_image)),
         );
