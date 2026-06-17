@@ -11,7 +11,7 @@ impl App {
             lines.push(Line::from(vec![
                 encode_hex(img.id)[0..8].to_owned().light_green(),
                 Span::from(" "),
-                Span::from(img.tags.iter().cloned().collect::<Vec<String>>().join(", ")),
+                Span::from(img.tags.join(", ")),
             ]))
         }
         let is_focused = self.focus == Focus::Images;
