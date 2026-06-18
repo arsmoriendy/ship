@@ -124,6 +124,21 @@ impl App {
                     self.refresh()?;
                     return Ok(true);
                 }
+                KeyCode::Char('D') => {
+                    let project = &self.projects[self.selected_project];
+                    let image = &project.images[self.selected_image];
+                    let Some(reg) = &self.config.project_registries.get(&project.name) else {
+                        return Ok(false);
+                    };
+                    let Some(cmds) = self.config.registry_commands.get(reg.as_str()) else {
+                        return Ok(false);
+                    };
+                    for tag in &image.tags {
+                        cmds.delete_image(image, Some(tag))?
+                    }
+                    self.refresh()?;
+                    return Ok(true);
+                }
                 _ => {}
             },
         }
