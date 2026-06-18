@@ -21,12 +21,12 @@ pub struct RawImage {
 #[derive(Debug)]
 pub struct Image {
     pub containers: u64,
+    pub digest: Option<[u8; 32]>,
     pub id: [u8; 32],
     pub tags: Vec<String>,
 
     pub created_at: String,
     pub created_since: String,
-    pub digest: String,
     pub repository: String,
     pub shared_size: String,
     pub size: String,
@@ -41,6 +41,8 @@ pub enum ParseImageError {
     ParseRepositoryError(String),
     #[error("failed parsing \"ID\" field: {0}")]
     ParseIdError(String),
+    #[error("failed parsing \"Digest\" field: {0}")]
+    ParseDigestError(String),
 }
 
 impl TryFrom<&RawImage> for Image {
@@ -51,13 +53,20 @@ impl TryFrom<&RawImage> for Image {
                 .containers
                 .parse()
                 .map_err(|_| ParseImageError::ParseContainersError(raw.containers.clone()))?,
-            id: Image::parse_id(raw.id.as_str())
+            digest: if raw.digest == "<none>" {
+                None
+            } else {
+                Some(
+                    Self::parse_prefixed_sha256(&raw.digest)
+                        .map_err(|_| ParseImageError::ParseDigestError(raw.digest.clone()))?,
+                )
+            },
+            id: Self::parse_prefixed_sha256(raw.id.as_str())
                 .map_err(|_| ParseImageError::ParseIdError(raw.id.clone()))?,
 
             tags: vec![raw.tag.clone()],
             created_at: raw.created_at.clone(),
             created_since: raw.created_since.clone(),
-            digest: raw.digest.clone(),
             repository: raw.repository.clone(),
             shared_size: raw.shared_size.clone(),
             size: raw.size.clone(),
@@ -73,18 +82,26 @@ pub enum DockerError {
 }
 
 impl Image {
-    fn parse_id(id: &str) -> Result<[u8; 32]> {
-        let vec: Vec<u8> = (7..id.len())
+    fn parse_prefixed_sha256(sha_str: &str) -> Result<[u8; 32]> {
+        let vec: Vec<u8> = (7..sha_str.len())
             .step_by(2)
-            .map(|i| u8::from_str_radix(&id[i..i + 2], 16))
+            .map(|i| u8::from_str_radix(&sha_str[i..i + 2], 16))
             .collect::<Result<Vec<u8>, ParseIntError>>()?;
         Ok(vec
             .try_into()
-            .map_err(|_| ParseImageError::ParseIdError(id.to_owned()))?)
+            .map_err(|_| anyhow!("failed parsing sha256"))?)
     }
 
     pub fn list() -> Result<Vec<Image>> {
-        let res = docker!("image", "list", "--format", "json", "--no-trunc", "--all");
+        let res = docker!(
+            "image",
+            "list",
+            "--format",
+            "json",
+            "--no-trunc",
+            "--all",
+            "--digests"
+        );
         if !res.status.success() {
             DockerError::CommandError(
                 res.status.code(),
@@ -103,7 +120,8 @@ impl Image {
             {
                 let raw = serde_json::from_str::<RawImage>(img_str)
                     .with_context(|| "Failed to parse image")?;
-                let id = Image::parse_id(&raw.id).with_context(|| "Failed to parse image id")?;
+                let id = Image::parse_prefixed_sha256(&raw.id)
+                    .with_context(|| "Failed to parse image id")?;
                 if let Some(img) = images.iter_mut().find(|img| img.id == id) {
                     if !img.tags.contains(&raw.tag) {
                         img.tags.push(raw.tag)
