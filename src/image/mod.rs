@@ -126,6 +126,9 @@ impl Image {
                     if !img.tags.contains(&raw.tag) {
                         img.tags.push(raw.tag)
                     };
+                    if img.digest == None && raw.digest != "<none>" {
+                        img.digest = Some(Self::parse_prefixed_sha256(raw.digest.as_str())?);
+                    }
                 } else {
                     let parsed: Image =
                         (&raw).try_into().with_context(|| "Failed to parse image")?;

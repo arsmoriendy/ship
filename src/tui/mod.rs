@@ -133,9 +133,7 @@ impl App {
                     let Some(cmds) = self.config.registry_commands.get(reg.as_str()) else {
                         return Ok(false);
                     };
-                    for tag in &image.tags {
-                        cmds.delete_image(image, Some(tag))?
-                    }
+                    cmds.delete_image(image)?;
                     self.refresh()?;
                     return Ok(true);
                 }

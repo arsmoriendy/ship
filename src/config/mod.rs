@@ -32,14 +32,18 @@ impl RegistryCommands {
         Ok(())
     }
 
-    pub fn delete_image<'a>(&self, image: &'a Image, tag: Option<&'a str>) -> Result<()> {
-        let mut del_cmd = self
+    pub fn delete_image<'a>(&self, image: &'a Image) -> Result<()> {
+        let del_cmd = self
             .delete_image
             .replace("{id}", &encode_hex(image.id))
-            .replace("{repository}", &image.repository);
-        if let Some(tag) = tag {
-            del_cmd = del_cmd.replace("{tag}", tag)
-        };
+            .replace("{repository}", &image.repository)
+            .replace(
+                "{digest}",
+                &image
+                    .digest
+                    .map(|dig| encode_hex(dig))
+                    .unwrap_or("<none>".to_owned()),
+            );
         Self::run_cmd(&del_cmd).with_context(|| "failed to delete image")?;
         Ok(())
     }
