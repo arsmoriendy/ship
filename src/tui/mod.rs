@@ -16,6 +16,8 @@ pub struct App {
     pub projects: Vec<Project>,
     pub config: Config,
 
+    pub project_digests: HashMap<String, Vec<[u8; 32]>>,
+
     pub exit: bool,
 
     pub selected_project: usize,
@@ -31,6 +33,7 @@ impl App {
         Ok(App {
             projects,
             config,
+            project_digests: HashMap::new(),
             exit: false,
             selected_project: 0,
             selected_image: 0,
@@ -91,6 +94,18 @@ impl App {
                     self.selected_image = 0
                 }
                 KeyCode::Char('L') | KeyCode::Enter => self.focus = Focus::Images,
+                KeyCode::Char('f') => {
+                    let project = &self.projects[self.selected_project];
+                    let Some(reg) = &self.config.project_registries.get(&project.name) else {
+                        return Ok(false);
+                    };
+                    let Some(cmds) = self.config.registry_commands.get(reg.as_str()) else {
+                        return Ok(false);
+                    };
+                    let project_registry_digests = cmds.list_digests(&project)?;
+                    self.project_digests
+                        .insert(project.name.clone(), project_registry_digests);
+                }
                 _ => {}
             },
             Focus::Images => match ke.code {
