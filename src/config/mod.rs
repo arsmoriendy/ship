@@ -1,6 +1,10 @@
 use std::io::Read;
 
-use crate::{image::Image, prelude::*};
+use crate::{
+    image::{Image, RawImage},
+    prelude::*,
+    project::Project,
+};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -13,27 +17,24 @@ pub struct Config {
 #[serde(rename_all = "camelCase")]
 pub struct RegistryCommands {
     delete_image: String,
+    list_images: String,
 }
 
 impl RegistryCommands {
-    fn run_cmd<'a>(cmd: &'a str) -> Result<()> {
-        let mut res = Command::new("sh").args(["-c", cmd]).spawn()?;
-        let status = res.wait()?;
-        if !status.success() {
-            let mut err_msg = String::new();
-            if let Some(mut stderr) = res.stderr {
-                stderr.read_to_string(&mut err_msg)?;
-            } else {
-                err_msg.push_str("non zero exit status");
-            }
-            return Err(anyhow!(err_msg))
+    fn run_cmd<'a>(cmd: &'a str) -> Result<String> {
+        let res = Command::new("sh")
+            .args(["-c", cmd])
+            .spawn()?
+            .wait_with_output()?;
+        if !res.status.success() {
+            return Err(anyhow!("{}", String::from_utf8(res.stderr)?))
                 .with_context(|| format!("failed to run command: \"{}\"", cmd));
         }
-        Ok(())
+        Ok(String::from_utf8(res.stdout)?)
     }
 
     pub fn delete_image<'a>(&self, image: &'a Image) -> Result<()> {
-        let del_cmd = self
+        let cmd = self
             .delete_image
             .replace("{id}", &encode_hex(image.id))
             .replace("{repository}", &image.repository)
@@ -44,8 +45,19 @@ impl RegistryCommands {
                     .map(|dig| encode_hex(dig))
                     .unwrap_or("<none>".to_owned()),
             );
-        Self::run_cmd(&del_cmd).with_context(|| "failed to delete image")?;
+        Self::run_cmd(&cmd).with_context(|| "failed to delete image")?;
         Ok(())
+    }
+
+    pub fn list_images<'a>(&self, project: &'a Project) -> Result<Vec<Image>> {
+        let cmd = self.list_images.replace("{project}", &project.name);
+        let res = Self::run_cmd(&cmd).with_context(|| "failed to list images")?;
+        let raw_images: Vec<RawImage> = serde_json::from_str(res.as_str())?;
+        let mut images: Vec<Image> = vec![];
+        for raw in raw_images {
+            images.push((&raw).try_into()?);
+        }
+        Ok(images)
     }
 }
 
