@@ -1,10 +1,4 @@
-use std::io::Read;
-
-use crate::{
-    image::{Image, RawImage},
-    prelude::*,
-    project::Project,
-};
+use crate::{image::Image, prelude::*, project::Project};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -17,15 +11,12 @@ pub struct Config {
 #[serde(rename_all = "camelCase")]
 pub struct RegistryCommands {
     delete_image: String,
-    list_images: String,
+    list_digests: String,
 }
 
 impl RegistryCommands {
     fn run_cmd<'a>(cmd: &'a str) -> Result<String> {
-        let res = Command::new("sh")
-            .args(["-c", cmd])
-            .spawn()?
-            .wait_with_output()?;
+        let res = Command::new("sh").args(["-c", cmd]).output()?;
         if !res.status.success() {
             return Err(anyhow!("{}", String::from_utf8(res.stderr)?))
                 .with_context(|| format!("failed to run command: \"{}\"", cmd));
@@ -49,15 +40,11 @@ impl RegistryCommands {
         Ok(())
     }
 
-    pub fn list_images<'a>(&self, project: &'a Project) -> Result<Vec<Image>> {
-        let cmd = self.list_images.replace("{project}", &project.name);
+    pub fn list_digests<'a>(&self, project: &'a Project) -> Result<Vec<String>> {
+        let cmd = self.list_digests.replace("{project}", &project.name);
         let res = Self::run_cmd(&cmd).with_context(|| "failed to list images")?;
-        let raw_images: Vec<RawImage> = serde_json::from_str(res.as_str())?;
-        let mut images: Vec<Image> = vec![];
-        for raw in raw_images {
-            images.push((&raw).try_into()?);
-        }
-        Ok(images)
+        let digests: Vec<String> = serde_json::from_str(res.as_str())?;
+        Ok(digests)
     }
 }
 
