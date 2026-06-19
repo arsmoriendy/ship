@@ -6,6 +6,7 @@ mod prelude;
 mod project;
 mod registry;
 mod relation;
+mod state;
 mod tui;
 
 use prelude::*;

@@ -11,7 +11,8 @@ impl App {
         for img in &project.images {
             let mut spans: Vec<Span> = vec![];
             let pushed = if let Some(digest) = img.digest
-                && let Some(project_digests) = self.project_digests.get(&project.name)
+                && let Some(project_digests) =
+                    self.state.project_registry_digests.get(&project.name)
                 && project_digests.contains(&digest)
             {
                 true

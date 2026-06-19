@@ -3,6 +3,7 @@ mod widgets;
 
 use crate::config::Config;
 use crate::project::Project;
+use crate::state::State;
 use crate::{prelude::*, relation};
 use prelude::*;
 
@@ -15,8 +16,7 @@ pub enum Focus {
 pub struct App {
     pub projects: Vec<Project>,
     pub config: Config,
-
-    pub project_digests: HashMap<String, Vec<[u8; 32]>>,
+    pub state: State,
 
     pub exit: bool,
 
@@ -33,7 +33,7 @@ impl App {
         Ok(App {
             projects,
             config,
-            project_digests: HashMap::new(),
+            state: State::load()?,
             exit: false,
             selected_project: 0,
             selected_image: 0,
@@ -103,8 +103,11 @@ impl App {
                         return Ok(false);
                     };
                     let project_registry_digests = cmds.list_digests(&project)?;
-                    self.project_digests
-                        .insert(project.name.clone(), project_registry_digests);
+                    self.state.sync(|state| {
+                        state
+                            .project_registry_digests
+                            .insert(project.name.clone(), project_registry_digests);
+                    })?;
                 }
                 _ => {}
             },

@@ -1,8 +1,10 @@
 #[macro_use]
 mod macros;
 
+use directories::ProjectDirs;
+use std::{num::ParseIntError, path::PathBuf};
+
 use crate::prelude::*;
-use std::num::ParseIntError;
 
 pub fn parse_prefixed_sha256(sha_str: &str) -> Result<[u8; 32]> {
     let vec: Vec<u8> = (7..sha_str.len())
@@ -12,4 +14,20 @@ pub fn parse_prefixed_sha256(sha_str: &str) -> Result<[u8; 32]> {
     Ok(vec
         .try_into()
         .map_err(|_| anyhow!("failed parsing sha256"))?)
+}
+
+pub fn project_dirs() -> Result<ProjectDirs> {
+    Ok(directories::ProjectDirs::from("top", "nugs", "ship")
+        .ok_or(anyhow!("failed to parse project directories"))?)
+}
+
+pub fn config_path() -> Result<PathBuf> {
+    Ok(project_dirs()?.config_dir().join("config.json"))
+}
+
+pub fn state_path() -> Result<PathBuf> {
+    Ok(project_dirs()?
+        .state_dir()
+        .ok_or(anyhow!("failed to locate state directory"))?
+        .join("state.json"))
 }
