@@ -40,10 +40,14 @@ impl RegistryCommands {
         Ok(())
     }
 
-    pub fn list_digests<'a>(&self, project: &'a Project) -> Result<Vec<String>> {
+    pub fn list_digests<'a>(&self, project: &'a Project) -> Result<Vec<[u8; 32]>> {
         let cmd = self.list_digests.replace("{project}", &project.name);
         let res = Self::run_cmd(&cmd).with_context(|| "failed to list images")?;
-        let digests: Vec<String> = serde_json::from_str(res.as_str())?;
+        let prefixed_digests: Vec<String> = serde_json::from_str(res.as_str())?;
+        let mut digests: Vec<[u8; 32]> = vec![];
+        for pd in prefixed_digests {
+            digests.push(parse_prefixed_sha256(pd.as_str())?);
+        }
         Ok(digests)
     }
 }

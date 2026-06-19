@@ -1,3 +1,4 @@
+pub use crate::utils::parse_prefixed_sha256;
 pub use anyhow::{Context as ErrorCtx, Result, anyhow};
 pub use hex::{decode as decode_hex, encode as encode_hex};
 pub use serde::{Deserialize, Serialize};

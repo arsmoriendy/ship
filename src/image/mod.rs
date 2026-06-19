@@ -1,5 +1,3 @@
-use std::num::ParseIntError;
-
 use crate::prelude::*;
 
 #[derive(Deserialize, Debug)]
@@ -57,11 +55,11 @@ impl TryFrom<&RawImage> for Image {
                 None
             } else {
                 Some(
-                    Self::parse_prefixed_sha256(&raw.digest)
+                    parse_prefixed_sha256(&raw.digest)
                         .map_err(|_| ParseImageError::ParseDigestError(raw.digest.clone()))?,
                 )
             },
-            id: Self::parse_prefixed_sha256(raw.id.as_str())
+            id: parse_prefixed_sha256(raw.id.as_str())
                 .map_err(|_| ParseImageError::ParseIdError(raw.id.clone()))?,
 
             tags: vec![raw.tag.clone()],
@@ -82,16 +80,6 @@ pub enum DockerError {
 }
 
 impl Image {
-    fn parse_prefixed_sha256(sha_str: &str) -> Result<[u8; 32]> {
-        let vec: Vec<u8> = (7..sha_str.len())
-            .step_by(2)
-            .map(|i| u8::from_str_radix(&sha_str[i..i + 2], 16))
-            .collect::<Result<Vec<u8>, ParseIntError>>()?;
-        Ok(vec
-            .try_into()
-            .map_err(|_| anyhow!("failed parsing sha256"))?)
-    }
-
     pub fn list() -> Result<Vec<Image>> {
         let res = docker!(
             "image",
@@ -120,14 +108,14 @@ impl Image {
             {
                 let raw = serde_json::from_str::<RawImage>(img_str)
                     .with_context(|| "Failed to parse image")?;
-                let id = Image::parse_prefixed_sha256(&raw.id)
-                    .with_context(|| "Failed to parse image id")?;
+                let id =
+                    parse_prefixed_sha256(&raw.id).with_context(|| "Failed to parse image id")?;
                 if let Some(img) = images.iter_mut().find(|img| img.id == id) {
                     if !img.tags.contains(&raw.tag) {
                         img.tags.push(raw.tag)
                     };
                     if img.digest == None && raw.digest != "<none>" {
-                        img.digest = Some(Self::parse_prefixed_sha256(raw.digest.as_str())?);
+                        img.digest = Some(parse_prefixed_sha256(raw.digest.as_str())?);
                     }
                 } else {
                     let parsed: Image =
