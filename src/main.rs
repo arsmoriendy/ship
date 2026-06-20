@@ -10,10 +10,11 @@ mod tui;
 
 use prelude::*;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let mut app = tui::App::new()?;
     let mut terminal = ratatui::init();
-    app.run(&mut terminal)?;
+    app.run(&mut terminal).await?;
     ratatui::restore();
     Ok(())
 }

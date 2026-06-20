@@ -1,10 +1,13 @@
 mod prelude;
 mod widgets;
 
+use std::time::Duration;
+
 use crate::config::Config;
 use crate::project::Project;
 use crate::state::State;
 use crate::{prelude::*, relation};
+use anyhow::Ok;
 use prelude::*;
 
 #[derive(PartialEq)]
@@ -50,13 +53,10 @@ impl App {
         Ok(())
     }
 
-    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
+    pub async fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
         while !self.exit {
             terminal.draw(|frame| self.draw(frame))?;
-            let should_clear = self.handle_events()?;
-            if should_clear {
-                terminal.clear()?;
-            }
+            self.handle_events().await?;
         }
         Ok(())
     }
@@ -69,14 +69,20 @@ impl App {
         self.exit = true;
     }
 
-    fn handle_events(&mut self) -> Result<bool> {
-        match event::read()? {
-            Event::Key(ke) if ke.kind == KeyEventKind::Press => Ok(self.handle_key_events(ke)?),
-            _ => Ok(false),
+    async fn handle_events(&mut self) -> Result<()> {
+        if event::poll(Duration::from_millis(1000))? {
+            match event::read()? {
+                Event::Key(ke) if ke.kind == KeyEventKind::Press => {
+                    Ok(self.handle_key_events(ke).await?)
+                }
+                _ => Ok(()),
+            }
+        } else {
+            Ok(())
         }
     }
 
-    fn handle_key_events(&mut self, ke: KeyEvent) -> Result<bool> {
+    async fn handle_key_events(&mut self, ke: KeyEvent) -> Result<()> {
         match self.focus {
             Focus::Projects => match ke.code {
                 KeyCode::Char('j') | KeyCode::Down => {
@@ -97,10 +103,10 @@ impl App {
                 KeyCode::Char('f') => {
                     let project = &self.projects[self.selected_project];
                     let Some(reg) = &self.config.project_registries.get(&project.name) else {
-                        return Ok(false);
+                        return Ok(());
                     };
                     let Some(cmds) = self.config.registry_commands.get(reg.as_str()) else {
-                        return Ok(false);
+                        return Ok(());
                     };
                     let project_registry_digests = cmds.list_digests(&project)?;
                     self.state.sync(|state| {
@@ -136,24 +142,24 @@ impl App {
                 KeyCode::Char('P') => {
                     let project = &self.projects[self.selected_project];
                     let Some(reg) = &self.config.project_registries.get(&project.name) else {
-                        return Ok(false);
+                        return Ok(());
                     };
                     relation::push(&project.images[self.selected_image], reg)?;
                     self.refresh()?;
-                    return Ok(true);
+                    return Ok(());
                 }
                 KeyCode::Char('D') => {
                     let project = &self.projects[self.selected_project];
                     let image = &project.images[self.selected_image];
                     let Some(reg) = &self.config.project_registries.get(&project.name) else {
-                        return Ok(false);
+                        return Ok(());
                     };
                     let Some(cmds) = self.config.registry_commands.get(reg.as_str()) else {
-                        return Ok(false);
+                        return Ok(());
                     };
                     cmds.delete_image(image)?;
                     self.refresh()?;
-                    return Ok(true);
+                    return Ok(());
                 }
                 _ => {}
             },
@@ -162,10 +168,10 @@ impl App {
             KeyCode::Char('q') => self.exit(),
             KeyCode::Char('r') => {
                 self.refresh()?;
-                return Ok(true);
+                return Ok(());
             }
             _ => {}
         }
-        Ok(false)
+        Ok(())
     }
 }
