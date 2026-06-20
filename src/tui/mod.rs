@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use crate::config::Config;
 use crate::project::Project;
-use crate::state::State;
+use crate::store::Store;
 use crate::{prelude::*, relation};
 use anyhow::Ok;
 use prelude::*;
@@ -19,7 +19,7 @@ pub enum Focus {
 pub struct App {
     pub projects: Vec<Project>,
     pub config: Config,
-    pub state: State,
+    pub store: Store,
 
     pub exit: bool,
 
@@ -36,7 +36,7 @@ impl App {
         Ok(App {
             projects,
             config,
-            state: State::load()?,
+            store: Store::load()?,
             exit: false,
             selected_project: 0,
             selected_image: 0,
@@ -109,8 +109,8 @@ impl App {
                         return Ok(());
                     };
                     let project_registry_digests = cmds.list_digests(&project)?;
-                    self.state.sync(|state| {
-                        state
+                    self.store.sync(|store| {
+                        store
                             .project_registry_digests
                             .insert(project.name.clone(), project_registry_digests);
                     })?;

@@ -1,22 +1,22 @@
 use crate::prelude::*;
 
 #[derive(Deserialize, Serialize, Default)]
-pub struct State {
+pub struct Store {
     pub project_registry_digests: HashMap<String, Vec<[u8; 32]>>,
 }
 
-impl State {
+impl Store {
     pub fn new() -> Result<Self> {
-        let state = Self::default();
+        let store = Self::default();
 
-        let state_file = state_path()?;
-        let parent_path = state_file
+        let file_path = state_path()?;
+        let parent_path = file_path
             .parent()
             .with_context(|| anyhow!("failed to retrieve state file dirname"))?;
         fs::create_dir_all(parent_path)?;
-        fs::write(state_file, serde_json::to_string(&state)?)?;
+        fs::write(file_path, serde_json::to_string(&store)?)?;
 
-        return Ok(state);
+        return Ok(store);
     }
 
     pub fn save(&self) -> Result<()> {
@@ -25,11 +25,11 @@ impl State {
     }
 
     pub fn load() -> Result<Self> {
-        let sd = state_path()?;
-        if !sd.exists() {
+        let file_path = state_path()?;
+        if !file_path.exists() {
             return Ok(Self::new().with_context(|| anyhow!("failed to create new state file"))?);
         }
-        let file_content = fs::read_to_string(sd.clone())?;
+        let file_content = fs::read_to_string(file_path.clone())?;
         Ok(serde_json::from_str(file_content.as_str())?)
     }
 

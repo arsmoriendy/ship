@@ -5,7 +5,7 @@ mod image;
 mod prelude;
 mod project;
 mod relation;
-mod state;
+mod store;
 mod tui;
 
 use prelude::*;
