@@ -1,5 +1,6 @@
 use crate::{image::Image, prelude::*};
 
+#[derive(Clone)]
 pub struct Project {
     pub name: String,
     pub images: Vec<Image>,

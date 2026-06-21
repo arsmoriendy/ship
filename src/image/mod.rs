@@ -16,7 +16,7 @@ pub struct RawImage {
     pub unique_size: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Image {
     pub containers: u64,
     pub digest: Option<[u8; 32]>,

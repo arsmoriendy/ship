@@ -12,7 +12,7 @@ use prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut app = tui::App::new()?;
+    let app = tui::App::new()?;
     let mut terminal = ratatui::init();
     app.run(&mut terminal).await?;
     ratatui::restore();

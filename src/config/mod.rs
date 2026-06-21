@@ -1,13 +1,13 @@
 use crate::{image::Image, prelude::*, project::Project};
 
-#[derive(Deserialize, Default, Serialize)]
+#[derive(Deserialize, Default, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
     pub project_registries: HashMap<String, String>,
     pub registry_commands: HashMap<String, RegistryCommands>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RegistryCommands {
     delete_image: String,
