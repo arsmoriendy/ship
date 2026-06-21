@@ -11,6 +11,8 @@ pub struct AppState {
     pub config: Config,
     pub store: Store,
 
+    pub loading: Option<String>,
+    pub spinner_frame: usize,
     pub exit: bool,
 
     pub selected_project: usize,

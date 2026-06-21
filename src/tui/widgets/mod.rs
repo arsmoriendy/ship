@@ -1,9 +1,11 @@
 mod focusable;
+mod footer;
 mod image_list;
 mod project_list;
 
 use crate::tui::prelude::*;
 use crate::tui::state::AppState;
+use crate::tui::widgets::footer::Footer;
 use crate::tui::widgets::image_list::ImageList;
 use crate::tui::widgets::project_list::ProjectList;
 
@@ -14,12 +16,11 @@ impl StatefulWidget for RootWidget {
     where
         Self: Sized,
     {
-        let h_layout = Layout::default()
-            .direction(Horizontal)
-            .constraints(vec![Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)])
-            .split(area);
+        let [main, footer] = vertical![*=1, ==1].areas(area);
+        let [projects, images] = horizontal![==50%,==50%].areas(main);
 
-        StatefulWidget::render(ProjectList {}, h_layout[0], buf, state);
-        StatefulWidget::render(ImageList {}, h_layout[1], buf, state);
+        StatefulWidget::render(ProjectList {}, projects, buf, state);
+        StatefulWidget::render(ImageList {}, images, buf, state);
+        StatefulWidget::render(Footer {}, footer, buf, state);
     }
 }

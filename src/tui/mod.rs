@@ -26,6 +26,8 @@ impl App {
             config,
             store: Store::load()?,
             exit: false,
+            loading: None,
+            spinner_frame: 0,
             selected_project: 0,
             selected_image: 0,
             focus: Focus::Projects,
@@ -68,7 +70,7 @@ impl App {
     }
 
     async fn handle_events(&self) -> Result<()> {
-        if event::poll(Duration::from_millis(1000))? {
+        if event::poll(Duration::from_millis(100))? {
             match event::read()? {
                 Event::Key(ke) if ke.kind == KeyEventKind::Press => {
                     Ok(self.handle_key_events(ke).await?)
@@ -102,7 +104,7 @@ impl App {
                 KeyCode::Char('f') => {
                     let mutex = self.state.clone();
                     tokio::task::spawn(async move {
-                        let state = mutex.lock().await;
+                        let mut state = mutex.lock().await;
 
                         let project = state.projects[state.selected_project].clone();
                         let Some(reg) = state.config.project_registries.get(&project.name) else {
@@ -114,6 +116,7 @@ impl App {
                             return Ok(());
                         };
 
+                        state.loading = Some("Fetching digests".to_owned());
                         drop(state);
 
                         let project_registry_digests = project_cmds.list_digests(&project)?;
@@ -124,6 +127,7 @@ impl App {
                                 .project_registry_digests
                                 .insert(project.name.clone(), project_registry_digests);
                         })?;
+                        state.loading = None;
 
                         Ok(())
                     });
