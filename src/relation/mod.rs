@@ -7,13 +7,8 @@ pub fn push<'a>(img: &'a Image, reg: &'a str) -> Result<()> {
 
     for tag in &img.tags {
         let tag_url = format!("{}:{}", project_url, tag);
-        docker!("image", "tag", &id_str, &tag_url);
-
-        let mut res = Command::new("docker")
-            .args(["push", &tag_url])
-            .spawn()
-            .with_context(|| format!("failed pushing image: {}", tag_url))?;
-        res.wait()?;
+        docker!("image", "tag", &id_str, &tag_url).output()?;
+        docker!("push", &tag_url).spawn()?.wait_with_output()?;
     }
 
     Ok(())

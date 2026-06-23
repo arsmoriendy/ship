@@ -89,7 +89,8 @@ impl Image {
             "--no-trunc",
             "--all",
             "--digests"
-        );
+        )
+        .output()?;
         if !res.status.success() {
             DockerError::CommandError(
                 res.status.code(),
