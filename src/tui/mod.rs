@@ -1,3 +1,4 @@
+mod external_command;
 mod prelude;
 mod state;
 mod widgets;
@@ -7,6 +8,7 @@ use std::time::Duration;
 use crate::config::Config;
 use crate::project::Project;
 use crate::store::Store;
+use crate::tui::external_command::ExternalCommand;
 use crate::tui::state::{AppState, Focus};
 use crate::tui::widgets::RootWidget;
 use crate::{prelude::*, relation};
@@ -25,11 +27,14 @@ impl App {
             projects,
             config,
             store: Store::load()?,
-            exit: false,
+
             loading: None,
             spinner_frame: 0,
+            exit: false,
+
             selected_project: 0,
             selected_image: 0,
+
             focus: Focus::Projects,
         }));
         Ok(App { state })
@@ -49,7 +54,7 @@ impl App {
 
             drop(state);
 
-            self.handle_events().await?;
+            self.handle_events(terminal).await?;
         }
         Ok(())
     }
@@ -69,11 +74,11 @@ impl App {
         Ok(())
     }
 
-    async fn handle_events(&self) -> Result<()> {
+    async fn handle_events(&self, terminal: &mut DefaultTerminal) -> Result<()> {
         if event::poll(Duration::from_millis(100))? {
             match event::read()? {
                 Event::Key(ke) if ke.kind == KeyEventKind::Press => {
-                    Ok(self.handle_key_events(ke).await?)
+                    Ok(self.handle_key_events(ke, terminal).await?)
                 }
                 _ => Ok(()),
             }
@@ -82,7 +87,7 @@ impl App {
         }
     }
 
-    async fn handle_key_events(&self, ke: KeyEvent) -> Result<()> {
+    async fn handle_key_events(&self, ke: KeyEvent, terminal: &mut DefaultTerminal) -> Result<()> {
         let mut state = self.state.lock().await;
         match state.focus {
             Focus::Projects => match ke.code {
@@ -102,35 +107,23 @@ impl App {
                 }
                 KeyCode::Char('L') | KeyCode::Enter => state.focus = Focus::Images,
                 KeyCode::Char('f') => {
-                    let mutex = self.state.clone();
-                    tokio::task::spawn(async move {
-                        let mut state = mutex.lock().await;
+                    let project = state.projects[state.selected_project].clone();
+                    let Some(reg) = state.config.project_registries.get(&project.name) else {
+                        return Ok(());
+                    };
+                    let cmds = state.config.registry_commands.clone();
+                    let Some(project_cmds) = cmds.get(reg.as_str()) else {
+                        return Ok(());
+                    };
 
-                        let project = state.projects[state.selected_project].clone();
-                        let Some(reg) = state.config.project_registries.get(&project.name) else {
-                            return Ok(());
-                        };
+                    let _cmd = ExternalCommand::init(terminal);
+                    let project_registry_digests = project_cmds.list_digests(&project)?;
 
-                        let cmds = state.config.registry_commands.clone();
-                        let Some(project_cmds) = cmds.get(reg.as_str()) else {
-                            return Ok(());
-                        };
-
-                        state.loading = Some("Fetching digests".to_owned());
-                        drop(state);
-
-                        let project_registry_digests = project_cmds.list_digests(&project)?;
-
-                        let mut state = mutex.lock().await;
-                        state.store.sync(|store| {
-                            store
-                                .project_registry_digests
-                                .insert(project.name.clone(), project_registry_digests);
-                        })?;
-                        state.loading = None;
-
-                        Ok(())
-                    });
+                    state.store.sync(|store| {
+                        store
+                            .project_registry_digests
+                            .insert(project.name.clone(), project_registry_digests);
+                    })?;
                 }
                 _ => {}
             },
@@ -161,10 +154,9 @@ impl App {
                     let Some(reg) = &state.config.project_registries.get(&project.name) else {
                         return Ok(());
                     };
+
+                    let _cmd = ExternalCommand::init(terminal)?;
                     relation::push(&project.images[state.selected_image], reg)?;
-                    drop(state);
-                    self.refresh().await?;
-                    return Ok(());
                 }
                 KeyCode::Char('D') => {
                     let project = &state.projects[state.selected_project];
@@ -175,10 +167,9 @@ impl App {
                     let Some(cmds) = state.config.registry_commands.get(reg.as_str()) else {
                         return Ok(());
                     };
+
+                    let _cmd = ExternalCommand::init(terminal)?;
                     cmds.delete_image(image)?;
-                    drop(state);
-                    self.refresh().await?;
-                    return Ok(());
                 }
                 _ => {}
             },
