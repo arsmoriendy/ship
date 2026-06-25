@@ -3,17 +3,21 @@ mod prelude;
 mod state;
 mod widgets;
 
-use std::time::Duration;
-
-use crate::config::Config;
-use crate::project::Project;
-use crate::store::Store;
-use crate::tui::external_command::ExternalCommand;
-use crate::tui::state::{AppState, Focus};
-use crate::tui::widgets::RootWidget;
-use crate::{prelude::*, relation};
+use crate::{
+    config::{CommandBehaviour, Config},
+    prelude::*,
+    project::Project,
+    relation,
+    store::Store,
+    tui::{
+        external_command::ExternalCommand,
+        state::{AppState, Focus},
+        widgets::RootWidget,
+    },
+};
 use anyhow::Ok;
 use prelude::*;
+use std::time::Duration;
 
 pub struct App {
     state: Arc<Mutex<AppState>>,
@@ -111,19 +115,44 @@ impl App {
                     let Some(reg) = state.config.project_registries.get(&project.name) else {
                         return Ok(());
                     };
-                    let cmds = state.config.registry_commands.clone();
+                    let cmds = &state.config.registry_commands;
                     let Some(project_cmds) = cmds.get(reg.as_str()) else {
                         return Ok(());
                     };
 
-                    let _cmd = ExternalCommand::init(terminal);
-                    let project_registry_digests = project_cmds.list_digests(&project)?;
+                    match state.config.command_behaviours.list_digests {
+                        CommandBehaviour::Async => {
+                            let mutex = self.state.clone();
+                            let project_cmds = project_cmds.clone();
+                            state.loading = Some("Fetching images...".to_owned());
+                            drop(state);
+                            tokio::task::spawn(async move {
+                                let project_registry_digests =
+                                    project_cmds.list_digests(&project)?;
 
-                    state.store.sync(|store| {
-                        store
-                            .project_registry_digests
-                            .insert(project.name.clone(), project_registry_digests);
-                    })?;
+                                let mut state = mutex.lock().await;
+                                state.store.sync(|store| {
+                                    store
+                                        .project_registry_digests
+                                        .insert(project.name.clone(), project_registry_digests);
+                                })?;
+                                state.loading = None;
+
+                                Ok(())
+                            });
+                        }
+                        CommandBehaviour::Interactive => {
+                            let _cmd = ExternalCommand::init(terminal);
+                            let project_registry_digests = project_cmds.list_digests(&project)?;
+
+                            state.store.sync(|store| {
+                                store
+                                    .project_registry_digests
+                                    .insert(project.name.clone(), project_registry_digests);
+                            })?;
+                        }
+                    }
+                    return Ok(());
                 }
                 _ => {}
             },
@@ -151,12 +180,39 @@ impl App {
                 KeyCode::Char('H') | KeyCode::Backspace => state.focus = Focus::Projects,
                 KeyCode::Char('P') => {
                     let project = &state.projects[state.selected_project];
-                    let Some(reg) = &state.config.project_registries.get(&project.name) else {
+                    let Some(reg) = state.config.project_registries.get(&project.name) else {
                         return Ok(());
                     };
+                    let reg = reg.clone();
+                    let image = &project.images[state.selected_image];
 
-                    let _cmd = ExternalCommand::init(terminal)?;
-                    relation::push(&project.images[state.selected_image], reg)?;
+                    match state.config.command_behaviours.push_image {
+                        CommandBehaviour::Async => {
+                            let mutex = self.state.clone();
+                            let image = image.clone();
+
+                            state.loading = Some("Pushing image...".to_owned());
+                            drop(state);
+
+                            tokio::task::spawn(async move {
+                                relation::push(&image, &reg)?;
+
+                                let mut state = mutex.lock().await;
+                                state.loading = None;
+                                drop(state);
+
+                                Ok(())
+                            });
+
+                            return Ok(());
+                        }
+                        CommandBehaviour::Interactive => {
+                            let _cmd = ExternalCommand::init(terminal)?;
+                            relation::push(&image, &reg)?;
+                        }
+                    }
+
+                    return Ok(());
                 }
                 KeyCode::Char('D') => {
                     let project = &state.projects[state.selected_project];
@@ -168,8 +224,32 @@ impl App {
                         return Ok(());
                     };
 
-                    let _cmd = ExternalCommand::init(terminal)?;
-                    cmds.delete_image(image)?;
+                    match state.config.command_behaviours.delete_image {
+                        CommandBehaviour::Async => {
+                            let mutex = self.state.clone();
+                            let project_cmds = cmds.clone();
+                            let image = image.clone();
+
+                            state.loading = Some("Deleting image...".to_owned());
+                            drop(state);
+
+                            tokio::task::spawn(async move {
+                                project_cmds.delete_image(&image)?;
+
+                                let mut state = mutex.lock().await;
+                                state.loading = None;
+                                drop(state);
+
+                                Ok(())
+                            });
+
+                            return Ok(());
+                        }
+                        CommandBehaviour::Interactive => {
+                            let _cmd = ExternalCommand::init(terminal)?;
+                            cmds.delete_image(image)?;
+                        }
+                    }
                 }
                 _ => {}
             },

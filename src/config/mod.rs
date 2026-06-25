@@ -5,6 +5,7 @@ use crate::{image::Image, prelude::*, project::Project};
 pub struct Config {
     pub project_registries: HashMap<String, String>,
     pub registry_commands: HashMap<String, RegistryCommands>,
+    pub command_behaviours: CommandBehaviours,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -12,6 +13,23 @@ pub struct Config {
 pub struct RegistryCommands {
     delete_image: String,
     list_digests: String,
+}
+
+#[derive(Deserialize, Serialize, Clone, SmartDefault)]
+#[serde(rename_all = "camelCase")]
+pub struct CommandBehaviours {
+    #[default(CommandBehaviour::Interactive)]
+    pub push_image: CommandBehaviour,
+    pub delete_image: CommandBehaviour,
+    pub list_digests: CommandBehaviour,
+}
+
+#[derive(Deserialize, Serialize, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum CommandBehaviour {
+    #[default]
+    Async,
+    Interactive,
 }
 
 impl RegistryCommands {
@@ -25,18 +43,13 @@ impl RegistryCommands {
     }
 
     pub fn delete_image<'a>(&self, image: &'a Image) -> Result<()> {
+        let digest = image.digest.ok_or(anyhow!("image has no digest"))?;
         let cmd = self
             .delete_image
             .replace("{id}", &encode_hex(image.id))
             .replace("{repository}", &image.repository)
-            .replace(
-                "{digest}",
-                &image
-                    .digest
-                    .map(|dig| encode_hex(dig))
-                    .unwrap_or("<none>".to_owned()),
-            );
-        Self::run_cmd(&cmd).with_context(|| "failed to delete image")?;
+            .replace("{digest}", &encode_hex(digest));
+        Self::run_cmd(&cmd)?;
         Ok(())
     }
 
@@ -62,7 +75,7 @@ impl Config {
                 .with_context(|| anyhow!("failed to retrieve config file dirname"))?;
             fs::create_dir_all(config_parent)?;
             let config = Self::default();
-            fs::write(config_file, serde_json::to_string(&config)?)?;
+            fs::write(config_file, serde_json::to_string_pretty(&config)?)?;
             return Ok(config);
         }
 
