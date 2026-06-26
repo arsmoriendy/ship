@@ -7,7 +7,6 @@ use crate::{
     config::{CommandBehaviour, Config},
     prelude::*,
     project::Project,
-    relation,
     store::Store,
     tui::{
         external_command::ExternalCommand,
@@ -111,47 +110,8 @@ impl App {
                 }
                 KeyCode::Char('L') | KeyCode::Enter => state.focus = Focus::Images,
                 KeyCode::Char('f') => {
-                    let project = state.projects[state.selected_project].clone();
-                    let Some(reg) = state.config.project_registries.get(&project.name) else {
-                        return Ok(());
-                    };
-                    let cmds = &state.config.registry_commands;
-                    let Some(project_cmds) = cmds.get(reg.as_str()) else {
-                        return Ok(());
-                    };
-
-                    match state.config.command_behaviours.list_digests {
-                        CommandBehaviour::Async => {
-                            let mutex = self.state.clone();
-                            let project_cmds = project_cmds.clone();
-                            state.loading = Some("Fetching images...".to_owned());
-                            drop(state);
-                            tokio::task::spawn(async move {
-                                let project_registry_digests =
-                                    project_cmds.list_digests(&project)?;
-
-                                let mut state = mutex.lock().await;
-                                state.store.sync(|store| {
-                                    store
-                                        .project_registry_digests
-                                        .insert(project.name.clone(), project_registry_digests);
-                                })?;
-                                state.loading = None;
-
-                                Ok(())
-                            });
-                        }
-                        CommandBehaviour::Interactive => {
-                            let _cmd = ExternalCommand::init(terminal);
-                            let project_registry_digests = project_cmds.list_digests(&project)?;
-
-                            state.store.sync(|store| {
-                                store
-                                    .project_registry_digests
-                                    .insert(project.name.clone(), project_registry_digests);
-                            })?;
-                        }
-                    }
+                    drop(state);
+                    self.update_digests().await?;
                     return Ok(());
                 }
                 _ => {}
@@ -183,73 +143,20 @@ impl App {
                     let Some(reg) = state.config.project_registries.get(&project.name) else {
                         return Ok(());
                     };
+                    let image = project.images[state.selected_image].clone();
                     let reg = reg.clone();
-                    let image = &project.images[state.selected_image];
+                    drop(state);
 
-                    match state.config.command_behaviours.push_image {
-                        CommandBehaviour::Async => {
-                            let mutex = self.state.clone();
-                            let image = image.clone();
-
-                            state.loading = Some("Pushing image...".to_owned());
-                            drop(state);
-
-                            tokio::task::spawn(async move {
-                                relation::push(&image, &reg)?;
-
-                                let mut state = mutex.lock().await;
-                                state.loading = None;
-                                drop(state);
-
-                                Ok(())
-                            });
-
-                            return Ok(());
-                        }
-                        CommandBehaviour::Interactive => {
-                            let _cmd = ExternalCommand::init(terminal)?;
-                            relation::push(&image, &reg)?;
-                        }
-                    }
+                    self.push_image(&image, &reg, terminal).await?;
 
                     return Ok(());
                 }
                 KeyCode::Char('D') => {
                     let project = &state.projects[state.selected_project];
-                    let image = &project.images[state.selected_image];
-                    let Some(reg) = &state.config.project_registries.get(&project.name) else {
-                        return Ok(());
-                    };
-                    let Some(cmds) = state.config.registry_commands.get(reg.as_str()) else {
-                        return Ok(());
-                    };
-
-                    match state.config.command_behaviours.delete_image {
-                        CommandBehaviour::Async => {
-                            let mutex = self.state.clone();
-                            let project_cmds = cmds.clone();
-                            let image = image.clone();
-
-                            state.loading = Some("Deleting image...".to_owned());
-                            drop(state);
-
-                            tokio::task::spawn(async move {
-                                project_cmds.delete_image(&image)?;
-
-                                let mut state = mutex.lock().await;
-                                state.loading = None;
-                                drop(state);
-
-                                Ok(())
-                            });
-
-                            return Ok(());
-                        }
-                        CommandBehaviour::Interactive => {
-                            let _cmd = ExternalCommand::init(terminal)?;
-                            cmds.delete_image(image)?;
-                        }
-                    }
+                    let image = project.images[state.selected_image].clone();
+                    drop(state);
+                    self.delete_image(&image, terminal).await?;
+                    return Ok(());
                 }
                 _ => {}
             },

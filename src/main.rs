@@ -4,7 +4,6 @@ mod config;
 mod image;
 mod prelude;
 mod project;
-mod relation;
 mod store;
 mod tui;
 

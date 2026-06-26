@@ -1,3 +1,4 @@
+pub use crate::image::{Digest, Image};
 pub use crate::utils::*;
 pub use anyhow::{Context as ErrorCtx, Result, anyhow};
 pub use hex::{decode as decode_hex, encode as encode_hex};

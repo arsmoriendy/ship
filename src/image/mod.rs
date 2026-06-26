@@ -16,10 +16,12 @@ pub struct RawImage {
     pub unique_size: String,
 }
 
+pub type Digest = [u8; 32];
+
 #[derive(Debug, Clone)]
 pub struct Image {
     pub containers: u64,
-    pub digest: Option<[u8; 32]>,
+    pub digest: Option<Digest>,
     pub id: [u8; 32],
     pub tags: Vec<String>,
 

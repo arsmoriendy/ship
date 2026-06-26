@@ -1,4 +1,4 @@
-use crate::{image::Image, prelude::*, project::Project};
+use crate::prelude::*;
 
 #[derive(Deserialize, Default, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -11,8 +11,8 @@ pub struct Config {
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RegistryCommands {
-    delete_image: String,
-    list_digests: String,
+    pub delete_image: String,
+    pub list_digests: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, SmartDefault)]
@@ -21,7 +21,6 @@ pub struct CommandBehaviours {
     #[default(CommandBehaviour::Interactive)]
     pub push_image: CommandBehaviour,
     pub delete_image: CommandBehaviour,
-    pub list_digests: CommandBehaviour,
 }
 
 #[derive(Deserialize, Serialize, Clone, Default)]
@@ -30,39 +29,6 @@ pub enum CommandBehaviour {
     #[default]
     Async,
     Interactive,
-}
-
-impl RegistryCommands {
-    fn run_cmd<'a>(cmd: &'a str) -> Result<String> {
-        let res = Command::new("sh").args(["-c", cmd]).output()?;
-        if !res.status.success() {
-            return Err(anyhow!("{}", String::from_utf8(res.stderr)?))
-                .with_context(|| format!("failed to run command: \"{}\"", cmd));
-        }
-        Ok(String::from_utf8(res.stdout)?)
-    }
-
-    pub fn delete_image<'a>(&self, image: &'a Image) -> Result<()> {
-        let digest = image.digest.ok_or(anyhow!("image has no digest"))?;
-        let cmd = self
-            .delete_image
-            .replace("{id}", &encode_hex(image.id))
-            .replace("{repository}", &image.repository)
-            .replace("{digest}", &encode_hex(digest));
-        Self::run_cmd(&cmd)?;
-        Ok(())
-    }
-
-    pub fn list_digests<'a>(&self, project: &'a Project) -> Result<Vec<[u8; 32]>> {
-        let cmd = self.list_digests.replace("{project}", &project.name);
-        let res = Self::run_cmd(&cmd).with_context(|| "failed to list images")?;
-        let prefixed_digests: Vec<String> = serde_json::from_str(res.as_str())?;
-        let mut digests: Vec<[u8; 32]> = vec![];
-        for pd in prefixed_digests {
-            digests.push(parse_prefixed_sha256(pd.as_str())?);
-        }
-        Ok(digests)
-    }
 }
 
 impl Config {
