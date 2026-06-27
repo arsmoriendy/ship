@@ -1,6 +1,6 @@
-use crate::tui::prelude::*;
 use crate::tui::{
     Focus,
+    prelude::*,
     state::AppState,
     widgets::focusable::{focus_block, focus_list},
 };

@@ -1,7 +1,8 @@
-use crate::config::{CommandBehaviour, RegistryCommands};
-use crate::prelude::*;
-use crate::project::Project;
-use crate::tui::prelude::*;
+use super::prelude::*;
+use crate::{
+    config::{CommandBehaviour, RegistryCommands},
+    project::Project,
+};
 
 macro_rules! sh {
     ($cmd:expr) => {

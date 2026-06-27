@@ -1,4 +1,4 @@
-use crate::{config::Config, prelude::*, project::Project, store::Store};
+use crate::{config::Config, project::Project, store::Store};
 
 #[derive(PartialEq)]
 pub enum Focus {

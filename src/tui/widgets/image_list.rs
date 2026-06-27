@@ -1,8 +1,9 @@
-use crate::prelude::*;
-use crate::tui::Focus;
-use crate::tui::prelude::*;
-use crate::tui::state::AppState;
-use crate::tui::widgets::focusable::{focus_block, focus_list};
+use crate::tui::{
+    Focus,
+    prelude::*,
+    state::AppState,
+    widgets::focusable::{focus_block, focus_list},
+};
 
 pub struct ImageList {}
 impl StatefulWidget for ImageList {

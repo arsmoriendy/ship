@@ -1,4 +1,3 @@
-use crate::prelude::*;
 use crate::tui::prelude::*;
 
 pub fn focus_bg(is_focused: bool) -> Style {

@@ -4,12 +4,11 @@ mod state;
 mod widgets;
 
 use crate::{
-    config::{CommandBehaviour, Config},
+    config::Config,
     prelude::*,
     project::Project,
     store::Store,
     tui::{
-        external_command::ExternalCommand,
         state::{AppState, Focus},
         widgets::RootWidget,
     },

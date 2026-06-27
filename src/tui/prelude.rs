@@ -1,3 +1,4 @@
+pub use crate::prelude::*;
 pub use ratatui::{
     DefaultTerminal, Frame,
     crossterm::{

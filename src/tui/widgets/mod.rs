@@ -3,11 +3,11 @@ mod footer;
 mod image_list;
 mod project_list;
 
-use crate::tui::prelude::*;
-use crate::tui::state::AppState;
-use crate::tui::widgets::footer::Footer;
-use crate::tui::widgets::image_list::ImageList;
-use crate::tui::widgets::project_list::ProjectList;
+use super::{
+    prelude::*,
+    state::AppState,
+    widgets::{footer::Footer, image_list::ImageList, project_list::ProjectList},
+};
 
 pub struct RootWidget {}
 impl StatefulWidget for RootWidget {
