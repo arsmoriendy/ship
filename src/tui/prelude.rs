@@ -16,3 +16,4 @@ pub use ratatui::{
     },
 };
 pub use std::io::stdout;
+pub const SPINNER_SEQUENCE: &[&str] = &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];

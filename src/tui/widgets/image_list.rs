@@ -1,14 +1,17 @@
 use crate::tui::{
     Focus,
+    actions::Action,
+    component::Component,
     prelude::*,
     state::AppState,
     widgets::focusable::{focus_block, focus_list},
 };
 
 pub struct ImageList {}
-impl StatefulWidget for ImageList {
+
+impl StatefulWidget for &mut ImageList {
     type State = AppState;
-    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+    fn render(self, area: Rect, buf: &mut Buffer, state: &mut AppState) {
         let project = &state.projects[state.selected_project];
         let mut lines: Vec<Line> = vec![];
         for img in &project.images {
@@ -37,5 +40,16 @@ impl StatefulWidget for ImageList {
             buf,
             &mut ListState::default().with_selected(Some(state.selected_image)),
         );
+    }
+}
+
+impl Component<&mut AppState> for ImageList {
+    async fn handle_key_events(&mut self, ke: &KeyEvent, _state: &mut AppState) -> Action {
+        match ke.code {
+            KeyCode::Char('H') => Action::Focus(Focus::Projects),
+            KeyCode::Char('D') => Action::DeleteImage,
+            KeyCode::Char('P') => Action::PushImage,
+            _ => Action::Noop,
+        }
     }
 }
