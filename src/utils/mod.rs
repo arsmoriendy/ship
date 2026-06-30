@@ -11,14 +11,14 @@ pub fn parse_prefixed_sha256(sha_str: &str) -> Result<[u8; 32]> {
         .step_by(2)
         .map(|i| u8::from_str_radix(&sha_str[i..i + 2], 16))
         .collect::<Result<Vec<u8>, ParseIntError>>()?;
-    Ok(vec
+    vec
         .try_into()
-        .map_err(|_| anyhow!("failed parsing sha256"))?)
+        .map_err(|_| anyhow!("failed parsing sha256"))
 }
 
 pub fn project_dirs() -> Result<ProjectDirs> {
-    Ok(directories::ProjectDirs::from("top", "nugs", "ship")
-        .ok_or(anyhow!("failed to parse project directories"))?)
+    directories::ProjectDirs::from("top", "nugs", "ship")
+        .ok_or(anyhow!("failed to parse project directories"))
 }
 
 pub fn config_path() -> Result<PathBuf> {

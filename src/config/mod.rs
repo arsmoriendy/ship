@@ -47,6 +47,6 @@ impl Config {
 
         let config_str =
             fs::read_to_string(config_file).with_context(|| "failed to read config file")?;
-        Ok(serde_json::from_str(&config_str).with_context(|| "failed to parse config file")?)
+        serde_json::from_str(&config_str).with_context(|| "failed to parse config file")
     }
 }

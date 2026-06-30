@@ -1,18 +1,16 @@
 pub use crate::prelude::*;
 pub use ratatui::{
-    DefaultTerminal, Frame,
+    DefaultTerminal,
     crossterm::{
         ExecutableCommand,
-        event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
+        event::{self, Event, KeyCode, KeyEvent},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
     },
-    layout::Direction::{Horizontal, Vertical},
-    macros::{constraint, constraints, horizontal, line as l, row, span, text, vertical},
+    macros::{horizontal, line as l, span, text, vertical},
     prelude::*,
     style::{Color, Style},
     widgets::{
-        Block, List, ListState, Paragraph, ScrollDirection, Scrollbar, ScrollbarOrientation,
-        ScrollbarState, StatefulWidget, Widget,
+        Block, List, ListState, StatefulWidget, Widget,
     },
 };
 pub use std::io::stdout;

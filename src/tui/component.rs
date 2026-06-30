@@ -8,7 +8,7 @@ pub trait Component<S> {
         }
     }
 
-    async fn handle_key_events(&mut self, ke: &KeyEvent, state: S) -> Action {
+    async fn handle_key_events(&mut self, _ke: &KeyEvent, _state: S) -> Action {
         Action::Noop
     }
 }

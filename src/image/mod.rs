@@ -75,12 +75,6 @@ impl TryFrom<&RawImage> for Image {
     }
 }
 
-#[derive(Error, Debug)]
-pub enum DockerError {
-    #[error("error calling the docker command, status: {0:?}, stderr: \"{1}\"")]
-    CommandError(Option<i32>, String),
-}
-
 impl Image {
     pub fn list() -> Result<Vec<Image>> {
         let res = docker!(
@@ -94,10 +88,7 @@ impl Image {
         )
         .output()?;
         if !res.status.success() {
-            DockerError::CommandError(
-                res.status.code(),
-                String::from_utf8(res.stderr).with_context(|| "Failed parsing stderr")?,
-            );
+            String::from_utf8(res.stderr).with_context(|| "Failed parsing stderr")?;
         }
         let out = res.stdout;
         let out_str = String::from_utf8(out).with_context(|| "Failed parsing stdout")?;
@@ -117,7 +108,7 @@ impl Image {
                     if !img.tags.contains(&raw.tag) {
                         img.tags.push(raw.tag)
                     };
-                    if img.digest == None && raw.digest != "<none>" {
+                    if img.digest.is_none() && raw.digest != "<none>" {
                         img.digest = Some(parse_prefixed_sha256(raw.digest.as_str())?);
                     }
                 } else {
