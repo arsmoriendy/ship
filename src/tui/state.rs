@@ -1,6 +1,7 @@
 use crate::{
     config::{Config, RegistryCommands},
     image::Image,
+    prelude::*,
     project::Project,
     store::Store,
 };
@@ -45,5 +46,10 @@ impl AppState {
         let reg = self.config.project_registries.get(&project.name)?;
         let cmds = &self.config.registry_commands;
         Some(cmds.get(reg.as_str())?.clone())
+    }
+
+    pub fn refresh_projects(&mut self) -> Result<()> {
+        self.projects = Project::list()?;
+        Ok(())
     }
 }

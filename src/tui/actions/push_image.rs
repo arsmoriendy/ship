@@ -4,6 +4,7 @@ add_app_action!(push_image, state, terminal, {
     let mtx = state.lock().await;
 
     let project = mtx.selected_project();
+    let project_name = project.name.clone();
     let image = mtx.selected_image();
     let reg = mtx
         .selected_registry()
@@ -19,20 +20,24 @@ add_app_action!(push_image, state, terminal, {
 
     for tag in &image_tags {
         let tag_url = format!("{}:{}", project_url, tag);
+        let mut mtx = state.lock().await;
         match behaviour {
             CommandBehaviour::Async => {
-                let mut mtx = state.lock().await;
                 mtx.loading = Some("Pushing image".to_owned());
                 drop(mtx);
 
                 let state = state.clone();
                 let id_str = image_id.clone();
+                let project_name = project_name.clone();
                 tokio::spawn(async move {
                     // TODO: handle errors
                     docker!("image", "tag", &id_str, &tag_url).output().unwrap();
                     docker!("push", &tag_url).output().unwrap();
 
                     let mut mtx = state.lock().await;
+                    mtx.refresh_projects().unwrap();
+                    let digest = mtx.selected_image().digest.unwrap();
+                    mtx.store.push_digest(&project_name, &digest).unwrap();
                     mtx.loading = None;
                 });
             }
@@ -42,6 +47,12 @@ add_app_action!(push_image, state, terminal, {
                     .spawn()?
                     .wait()?;
                 docker!("push", &tag_url).spawn()?.wait()?;
+                mtx.refresh_projects()?;
+                let digest = mtx
+                    .selected_image()
+                    .digest
+                    .ok_or(anyhow!("Image has no digest"))?;
+                mtx.store.push_digest(&project_name, &digest)?;
             }
         }
     }

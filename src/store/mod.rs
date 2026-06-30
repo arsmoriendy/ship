@@ -48,4 +48,14 @@ impl Store {
             digests.retain(|d| d != digest);
         })
     }
+
+    pub fn push_digest(&mut self, project_name: &str, digest: &[u8; 32]) -> Result<()> {
+        self.sync(|store| {
+            let digests = store
+                .project_registry_digests
+                .get_mut(project_name)
+                .unwrap();
+            digests.push(*digest);
+        })
+    }
 }
