@@ -36,13 +36,13 @@ pub struct Image {
 #[derive(Error, Debug)]
 pub enum ParseImageError {
     #[error("failed parsing \"Containers\" field: {0}")]
-    ParseContainersError(String),
+    Containers(String),
     #[error("failed parsing \"Repository\" field: {0}")]
-    ParseRepositoryError(String),
+    Repository(String),
     #[error("failed parsing \"ID\" field: {0}")]
-    ParseIdError(String),
+    Id(String),
     #[error("failed parsing \"Digest\" field: {0}")]
-    ParseDigestError(String),
+    Digest(String),
 }
 
 impl TryFrom<&RawImage> for Image {
@@ -52,17 +52,17 @@ impl TryFrom<&RawImage> for Image {
             containers: raw
                 .containers
                 .parse()
-                .map_err(|_| ParseImageError::ParseContainersError(raw.containers.clone()))?,
+                .map_err(|_| ParseImageError::Containers(raw.containers.clone()))?,
             digest: if raw.digest == "<none>" {
                 None
             } else {
                 Some(
                     parse_prefixed_sha256(&raw.digest)
-                        .map_err(|_| ParseImageError::ParseDigestError(raw.digest.clone()))?,
+                        .map_err(|_| ParseImageError::Digest(raw.digest.clone()))?,
                 )
             },
             id: parse_prefixed_sha256(raw.id.as_str())
-                .map_err(|_| ParseImageError::ParseIdError(raw.id.clone()))?,
+                .map_err(|_| ParseImageError::Id(raw.id.clone()))?,
 
             tags: vec![raw.tag.clone()],
             created_at: raw.created_at.clone(),
