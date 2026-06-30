@@ -85,20 +85,29 @@ impl App {
                 .clone();
             drop(mtx);
 
-            match action {
-                Action::SelectUp => self.select_up().await?,
-                Action::SelectDown => self.select_down().await?,
-                Action::Focus(focus) => match focus {
-                    Focus::Images => self.focus_images().await?,
-                    Focus::Projects => self.focus_projects().await?,
-                },
-                Action::PushImage => self.push_image(terminal).await?,
-                Action::DeleteImage => self.delete_image(terminal).await?,
-                Action::FetchDigests => self.fetch_digests().await?,
-                Action::Quit => self.quit().await?,
-                _ => {}
-            };
+            self.handle_action(action, terminal).await?;
         }
+        Ok(())
+    }
+
+    async fn handle_action(
+        &mut self,
+        action: Action,
+        terminal: &mut DefaultTerminal,
+    ) -> Result<()> {
+        match action {
+            Action::SelectUp => self.select_up().await?,
+            Action::SelectDown => self.select_down().await?,
+            Action::Focus(focus) => match focus {
+                Focus::Images => self.focus_images().await?,
+                Focus::Projects => self.focus_projects().await?,
+            },
+            Action::PushImage => self.push_image(terminal).await?,
+            Action::DeleteImage => self.delete_image(terminal).await?,
+            Action::FetchDigests => self.fetch_digests().await?,
+            Action::Quit => self.quit().await?,
+            _ => {}
+        };
         Ok(())
     }
 }
