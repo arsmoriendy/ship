@@ -34,12 +34,7 @@ impl StatefulWidget for &mut ProjectList {
             .widths(constraints![*=1, ==10, *=1])
             .rows(rows);
 
-        StatefulWidget::render(
-            table,
-            area,
-            buf,
-            &mut TableState::default().with_selected(state.selected_project),
-        );
+        StatefulWidget::render(table, area, buf, &mut state.project_table_state);
     }
 }
 

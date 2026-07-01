@@ -1,9 +1,9 @@
 use crate::{
     config::{Config, RegistryCommands},
     image::Image,
-    prelude::*,
     project::Project,
     store::Store,
+    tui::prelude::*,
 };
 
 #[derive(PartialEq, Clone, Debug)]
@@ -21,19 +21,19 @@ pub struct AppState {
     pub spinner_frame: usize,
     pub exit: bool,
 
-    pub selected_project: usize,
-    pub selected_image: usize,
+    pub project_table_state: TableState,
+    pub image_table_state: TableState,
 
     pub focus: Focus,
 }
 
 impl AppState {
     pub fn selected_project(&self) -> &Project {
-        &self.projects[self.selected_project]
+        &self.projects[self.project_table_state.selected().unwrap()]
     }
 
     pub fn selected_image(&self) -> &Image {
-        &self.selected_project().images[self.selected_image]
+        &self.selected_project().images[self.image_table_state.selected().unwrap()]
     }
 
     pub fn selected_registry(&self) -> Option<&String> {

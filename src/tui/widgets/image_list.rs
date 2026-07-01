@@ -12,7 +12,7 @@ pub struct ImageList {}
 impl StatefulWidget for &mut ImageList {
     type State = AppState;
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut AppState) {
-        let project = &state.projects[state.selected_project];
+        let project = &state.selected_project();
         let mut lines: Vec<Line> = vec![];
         for img in &project.images {
             let mut spans: Vec<Span> = vec![];
@@ -70,12 +70,7 @@ impl StatefulWidget for &mut ImageList {
             .header(Row::new(["Pushed", "Id", "Digest", "Tags"]).bold())
             .rows(rows);
 
-        StatefulWidget::render(
-            table,
-            area,
-            buf,
-            &mut TableState::default().with_selected(state.selected_image),
-        );
+        StatefulWidget::render(table, area, buf, &mut state.image_table_state);
     }
 }
 

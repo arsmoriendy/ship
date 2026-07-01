@@ -39,8 +39,8 @@ impl App {
             spinner_frame: 0,
             exit: false,
 
-            selected_project: 0,
-            selected_image: 0,
+            image_table_state: TableState::default().with_selected(0),
+            project_table_state: TableState::default().with_selected(0),
 
             focus: Focus::Projects,
         }));
