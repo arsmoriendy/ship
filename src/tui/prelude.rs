@@ -6,12 +6,10 @@ pub use ratatui::{
         event::{self, Event, KeyCode, KeyEvent},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
     },
-    macros::{horizontal, line as l, span, text, vertical},
+    macros::{constraints, horizontal, line as l, span, text, vertical},
     prelude::*,
     style::{Color, Style},
-    widgets::{
-        Block, List, ListState, StatefulWidget, Widget,
-    },
+    widgets::{Block, List, ListState, Row, StatefulWidget, Table, TableState, Widget},
 };
 pub use std::io::stdout;
 pub const SPINNER_SEQUENCE: &[&str] = &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];

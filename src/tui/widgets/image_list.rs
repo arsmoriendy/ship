@@ -4,7 +4,7 @@ use crate::tui::{
     component::Component,
     prelude::*,
     state::AppState,
-    widgets::focusable::{focus_block, focus_list},
+    widgets::focusable::{focus_block, focus_list, focus_table},
 };
 
 pub struct ImageList {}
@@ -31,14 +31,50 @@ impl StatefulWidget for &mut ImageList {
             spans.push(Span::from(img.tags.join(", ")));
             lines.push(Line::from(spans))
         }
+        let rows: Vec<Row> = state
+            .selected_project()
+            .images
+            .iter()
+            .map(|img| {
+                let mut spans: Vec<Span> = vec![];
+
+                let pushed = if let Some(digest) = img.digest
+                    && let Some(project_digests) =
+                        state.store.project_registry_digests.get(&project.name)
+                    && project_digests.contains(&digest)
+                {
+                    "✓".to_owned().light_green()
+                } else {
+                    "⨯".to_owned().red()
+                };
+
+                let digest = span![
+                    img.digest
+                        .map(|dig| encode_hex(dig))
+                        .unwrap_or("-".to_owned())
+                ]
+                .light_yellow();
+
+                spans.push(pushed);
+                spans.push(encode_hex(img.id).light_green());
+                spans.push(digest);
+                spans.push(Span::from(img.tags.join(", ")));
+
+                Row::new(spans)
+            })
+            .collect();
         let is_focused = state.focus == Focus::Images;
+        let table = focus_table(is_focused)
+            .block(focus_block(is_focused).title("Images"))
+            .widths(constraints![==6, ==8, ==8, *=1])
+            .header(Row::new(["Pushed", "Id", "Digest", "Tags"]).bold())
+            .rows(rows);
+
         StatefulWidget::render(
-            focus_list(is_focused)
-                .items(lines)
-                .block(focus_block(is_focused).title("Images")),
+            table,
             area,
             buf,
-            &mut ListState::default().with_selected(Some(state.selected_image)),
+            &mut TableState::default().with_selected(state.selected_image),
         );
     }
 }
@@ -46,7 +82,7 @@ impl StatefulWidget for &mut ImageList {
 impl Component<&mut AppState> for ImageList {
     async fn handle_key_events(&mut self, ke: &KeyEvent, _state: &mut AppState) -> Action {
         match ke.code {
-            KeyCode::Char('H') => Action::Focus(Focus::Projects),
+            KeyCode::Char('K') => Action::Focus(Focus::Projects),
             KeyCode::Char('D') => Action::DeleteImage,
             KeyCode::Char('P') => Action::PushImage,
             _ => Action::Noop,

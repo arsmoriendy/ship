@@ -34,7 +34,7 @@ impl StatefulWidget for &mut RootWidget {
         Self: Sized,
     {
         let [main, footer] = vertical![*=1, ==1].areas(area);
-        let [projects, images] = horizontal![==50%,==50%].areas(main);
+        let [projects, images] = vertical![==50%,==50%].areas(main);
 
         self.project_list.render(projects, buf, state);
         self.image_list.render(images, buf, state);
