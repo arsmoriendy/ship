@@ -22,10 +22,6 @@ pub fn focus_block<'a>(is_focused: bool) -> Block<'a> {
     Block::bordered().border_style(focus_fg(is_focused))
 }
 
-pub fn focus_list<'a>(is_focused: bool) -> List<'a> {
-    List::default().highlight_style(focus_bg(is_focused))
-}
-
 pub fn focus_table<'a>(is_focused: bool) -> Table<'a> {
     Table::default().row_highlight_style(focus_bg(is_focused))
 }

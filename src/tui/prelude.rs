@@ -9,7 +9,7 @@ pub use ratatui::{
     macros::{constraints, horizontal, line as l, span, text, vertical},
     prelude::*,
     style::{Color, Style},
-    widgets::{Block, List, ListState, Row, StatefulWidget, Table, TableState, Widget},
+    widgets::{Block, Row, StatefulWidget, Table, TableState, Widget},
 };
 pub use std::io::stdout;
 pub const SPINNER_SEQUENCE: &[&str] = &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];

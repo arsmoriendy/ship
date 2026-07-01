@@ -4,7 +4,7 @@ use crate::tui::{
     component::Component,
     prelude::*,
     state::AppState,
-    widgets::focusable::{focus_block, focus_list, focus_table},
+    widgets::focusable::{focus_block, focus_table},
 };
 
 pub struct ImageList {}
