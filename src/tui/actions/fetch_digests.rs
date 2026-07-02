@@ -32,6 +32,7 @@ add_app_action!(fetch_digests, state, {
         mtx.store
             .sync(|store| {
                 store.project_registry_digests.insert(project_name, digests);
+                Ok(())
             })
             .unwrap();
         mtx.loading = None;

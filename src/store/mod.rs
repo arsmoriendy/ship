@@ -33,8 +33,8 @@ impl Store {
         Ok(serde_json::from_str(file_content.as_str())?)
     }
 
-    pub fn sync<S: FnOnce(&mut Self)>(&mut self, setter: S) -> Result<()> {
-        setter(self);
+    pub fn sync<S: FnOnce(&mut Self) -> Result<()>>(&mut self, setter: S) -> Result<()> {
+        setter(self)?;
         self.save()?;
         Ok(())
     }
@@ -44,8 +44,9 @@ impl Store {
             let digests = store
                 .project_registry_digests
                 .get_mut(project_name)
-                .unwrap();
+                .ok_or(anyhow!["Cannot find digest"])?;
             digests.retain(|d| d != digest);
+            Ok(())
         })
     }
 
@@ -54,8 +55,9 @@ impl Store {
             let digests = store
                 .project_registry_digests
                 .get_mut(project_name)
-                .unwrap();
+                .ok_or(anyhow!["Cannot find digest"])?;
             digests.push(*digest);
+            Ok(())
         })
     }
 }
