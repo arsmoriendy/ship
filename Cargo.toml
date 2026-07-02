@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.102"
 derive-new = "0.7.0"
+derive_setters = "0.1.9"
 directories = "6.0.0"
 hex = { version = "0.4.3", features = ["serde"] }
 ratatui = { version = "0.30.1", features = ["macros"] }

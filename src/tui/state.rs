@@ -12,6 +12,11 @@ pub enum Focus {
     Images,
 }
 
+pub enum PopupVariant {
+    Info(String),
+    Error(String),
+}
+
 pub struct AppState {
     pub projects: Vec<Project>,
     pub config: Config,
@@ -23,6 +28,8 @@ pub struct AppState {
 
     pub project_table_state: TableState,
     pub image_table_state: TableState,
+
+    pub popup: Option<PopupVariant>,
 
     pub focus: Focus,
 }

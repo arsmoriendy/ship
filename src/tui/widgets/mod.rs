@@ -1,14 +1,19 @@
 mod focusable;
 mod footer;
 mod image_list;
+mod popup;
 mod project_list;
+
+use ratatui::text::ToText;
+
+use crate::tui::state::PopupVariant;
 
 use super::{
     actions::Action,
     component::Component,
     prelude::*,
     state::{AppState, Focus},
-    widgets::{footer::Footer, image_list::ImageList, project_list::ProjectList},
+    widgets::{footer::Footer, image_list::ImageList, popup::Popup, project_list::ProjectList},
 };
 
 pub struct RootWidget {
@@ -35,10 +40,27 @@ impl StatefulWidget for &mut RootWidget {
     {
         let [main, footer] = vertical![*=1, ==1].areas(area);
         let [projects, images] = vertical![==50%,==50%].areas(main);
+        let popup = Rect {
+            x: area.width / 4,
+            y: area.height / 3,
+            width: area.width / 2,
+            height: area.height / 3,
+        };
 
         self.project_list.render(projects, buf, state);
         self.image_list.render(images, buf, state);
         self.footer.render(footer, buf, state);
+        if let Some(pop) = &state.popup {
+            let (title, content, style) = match pop {
+                PopupVariant::Info(s) => ("Info", s.to_text(), Style::default()),
+                PopupVariant::Error(s) => ("Error", s.to_text(), Style::default().red()),
+            };
+            Popup::default()
+                .title(title)
+                .content(content)
+                .style(style)
+                .render(popup, buf);
+        }
     }
 }
 
@@ -60,11 +82,14 @@ impl Component<&mut AppState> for RootWidget {
         }
     }
 
-    async fn handle_key_events(&mut self, ke: &KeyEvent, _state: &mut AppState) -> Action {
+    async fn handle_key_events(&mut self, ke: &KeyEvent, state: &mut AppState) -> Action {
         match ke.code {
             KeyCode::Char('j') | KeyCode::Down => Action::SelectDown,
             KeyCode::Char('k') | KeyCode::Up => Action::SelectUp,
-            KeyCode::Char('q') | KeyCode::Esc => Action::Quit,
+            KeyCode::Char('q') | KeyCode::Esc => match state.popup {
+                Some(_) => Action::ClosePopup,
+                None => Action::Quit,
+            },
             _ => Action::Noop,
         }
     }

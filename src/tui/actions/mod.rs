@@ -1,5 +1,6 @@
 use crate::tui::state::Focus;
 
+mod close_popup;
 mod delete_image;
 mod fetch_digests;
 mod focus_images;
@@ -19,4 +20,5 @@ pub enum Action {
     FetchDigests,
     Quit,
     Noop,
+    ClosePopup,
 }

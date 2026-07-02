@@ -48,12 +48,8 @@ impl StatefulWidget for &mut ImageList {
                     "⨯".to_owned().red()
                 };
 
-                let digest = span![
-                    img.digest
-                        .map(|dig| encode_hex(dig))
-                        .unwrap_or("-".to_owned())
-                ]
-                .light_yellow();
+                let digest =
+                    span![img.digest.map(encode_hex).unwrap_or("-".to_owned())].light_yellow();
 
                 spans.push(pushed);
                 spans.push(encode_hex(img.id).light_green());

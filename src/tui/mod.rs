@@ -42,6 +42,8 @@ impl App {
             image_table_state: TableState::default().with_selected(0),
             project_table_state: TableState::default().with_selected(0),
 
+            popup: None,
+
             focus: Focus::Projects,
         }));
         Ok(App {
@@ -85,7 +87,10 @@ impl App {
                 .clone();
             drop(mtx);
 
-            self.handle_action(action, terminal).await?;
+            if let Err(e) = self.handle_action(action, terminal).await {
+                let mut mtx = self.state.lock().await;
+                mtx.popup = Some(state::PopupVariant::Error(e.to_string()))
+            };
         }
         Ok(())
     }
@@ -105,6 +110,7 @@ impl App {
             Action::PushImage => self.push_image(terminal).await?,
             Action::DeleteImage => self.delete_image(terminal).await?,
             Action::FetchDigests => self.fetch_digests().await?,
+            Action::ClosePopup => self.close_popup().await?,
             Action::Quit => self.quit().await?,
             _ => {}
         };

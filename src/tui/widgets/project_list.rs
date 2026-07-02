@@ -22,7 +22,7 @@ impl StatefulWidget for &mut ProjectList {
                     format!("{} images ", proj.images.len()).fg(Color::LightGreen),
                 ];
                 if let Some(registry) = state.config.project_registries.get(&proj.name) {
-                    spans.push(format!("{}", registry).fg(Color::Yellow))
+                    spans.push(registry.to_string().fg(Color::Yellow))
                 }
                 Row::new(spans)
             })
