@@ -14,28 +14,31 @@ add_app_action!(fetch_digests, state, {
 
     drop(mtx);
 
-    // TODO: handle errors
-    let state = state.clone();
-    tokio::spawn(async move {
-        let mut mtx = state.lock().await;
+    let st = state.clone();
+    let handle: JoinHandle<Result<()>> = tokio::spawn(async move {
+        let mut mtx = st.lock().await;
         mtx.loading = Some("Fetching digests...".to_owned());
         drop(mtx);
 
-        let res = ExternalCommand::sh(&cmd).unwrap();
-        let prefixed_digests: Vec<String> = serde_json::from_str(res.as_str()).unwrap();
+        let res = ExternalCommand::sh(&cmd)?;
+        let prefixed_digests: Vec<String> = serde_json::from_str(res.as_str())?;
         let mut digests: Vec<[u8; 32]> = vec![];
         for pd in prefixed_digests {
-            digests.push(parse_prefixed_sha256(&pd).unwrap());
+            digests.push(parse_prefixed_sha256(&pd)?);
         }
 
-        let mut mtx = state.lock().await;
-        mtx.store
-            .sync(|store| {
-                store.project_registry_digests.insert(project_name, digests);
-                Ok(())
-            })
-            .unwrap();
+        let mut mtx = st.lock().await;
+        mtx.store.sync(|store| {
+            store.project_registry_digests.insert(project_name, digests);
+            Ok(())
+        })?;
         mtx.loading = None;
+
+        Ok(())
     });
+
+    let st = state.clone();
+    handle_spawn_error!(st, handle);
+
     Ok(())
 });

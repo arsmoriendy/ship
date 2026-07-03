@@ -26,20 +26,27 @@ add_app_action!(push_image, state, terminal, {
                 mtx.loading = Some("Pushing image".to_owned());
                 drop(mtx);
 
-                let state = state.clone();
+                let st = state.clone();
                 let id_str = image_id.clone();
                 let project_name = project_name.clone();
-                tokio::spawn(async move {
-                    // TODO: handle errors
-                    docker!("image", "tag", &id_str, &tag_url).output().unwrap();
-                    docker!("push", &tag_url).output().unwrap();
+                let handle: JoinHandle<Result<()>> = tokio::spawn(async move {
+                    docker!("image", "tag", &id_str, &tag_url).output()?;
+                    docker!("push", &tag_url).output()?;
 
-                    let mut mtx = state.lock().await;
-                    mtx.refresh_projects().unwrap();
-                    let digest = mtx.selected_image().digest.unwrap();
-                    mtx.store.push_digest(&project_name, &digest).unwrap();
+                    let mut mtx = st.lock().await;
+                    mtx.refresh_projects()?;
+                    let digest = mtx
+                        .selected_image()
+                        .digest
+                        .ok_or(anyhow!("Selceted image has not digest"))?;
+                    mtx.store.push_digest(&project_name, &digest)?;
                     mtx.loading = None;
+
+                    Ok(())
                 });
+
+                let st = state.clone();
+                handle_spawn_error!(st, handle);
             }
             CommandBehaviour::Interactive => {
                 let _cmd = ExternalCommand::init(terminal);

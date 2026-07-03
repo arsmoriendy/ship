@@ -21,16 +21,20 @@ add_app_action!(delete_image, state, terminal, {
             mtx.loading = Some("Deleting image...".to_owned());
             drop(mtx);
 
-            let state = state.clone();
-            tokio::task::spawn(async move {
-                // TODO: handle error
-                ExternalCommand::sh(&cmd).unwrap();
+            let st = state.clone();
+            let handle: JoinHandle<Result<()>> = tokio::task::spawn(async move {
+                ExternalCommand::sh(&cmd)?;
 
-                let mut mtx = state.lock().await;
+                let mut mtx = st.lock().await;
                 mtx.loading = None;
-                mtx.store.remove_digest(&project_name, &digest).unwrap();
+                mtx.store.remove_digest(&project_name, &digest)?;
                 drop(mtx);
+
+                Ok(())
             });
+
+            let st = state.clone();
+            handle_spawn_error!(st, handle);
         }
         CommandBehaviour::Interactive => {
             ExternalCommand::shout(&cmd, terminal)?;

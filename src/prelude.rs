@@ -12,3 +12,4 @@ pub use std::process::Command;
 pub use std::sync::Arc;
 pub use thiserror::Error;
 pub use tokio::sync::Mutex;
+pub use tokio::task::JoinHandle;

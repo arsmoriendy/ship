@@ -26,3 +26,14 @@ macro_rules! add_app_action {
         }
     };
 }
+
+macro_rules! handle_spawn_error {
+    ($state:expr, $handle:expr) => {
+        tokio::spawn(async move {
+            if let Err(err) = $handle.await.unwrap() {
+                let mut mtx = $state.lock().await;
+                mtx.popup = Some(ErrorPopup(err.to_string()))
+            }
+        });
+    };
+}

@@ -1,4 +1,5 @@
 pub use crate::prelude::*;
+pub use crate::tui::state::PopupVariant::Error as ErrorPopup;
 pub use ratatui::{
     DefaultTerminal,
     crossterm::{
