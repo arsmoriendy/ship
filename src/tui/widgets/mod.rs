@@ -41,10 +41,10 @@ impl StatefulWidget for &mut RootWidget {
         let [main, footer] = vertical![*=1, ==1].areas(area);
         let [projects, images] = vertical![==50%,==50%].areas(main);
         let popup = Rect {
-            x: area.width / 4,
-            y: area.height / 3,
-            width: area.width / 2,
-            height: area.height / 3,
+            x: 3,
+            y: area.height / 2 - 3,
+            width: area.width - 6,
+            height: 6,
         };
 
         self.project_list.render(projects, buf, state);
