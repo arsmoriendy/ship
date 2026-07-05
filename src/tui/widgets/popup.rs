@@ -1,4 +1,4 @@
-use crate::tui::prelude::*;
+use crate::tui::{actions::Action, component::Component, prelude::*, state::AppState};
 
 #[derive(Debug, Default, Setters)]
 pub struct Popup<'a> {
@@ -24,5 +24,14 @@ impl Widget for Popup<'_> {
             .style(self.style)
             .block(block)
             .render(area, buf);
+    }
+}
+
+#[derive(Default)]
+pub struct PopupComponent {}
+
+impl Component<&mut AppState> for PopupComponent {
+    async fn handle_key_events(&mut self, ke: &KeyEvent, state: &mut AppState) -> Action {
+        state.config.match_actions(ke, &[Action::ClosePopup])
     }
 }

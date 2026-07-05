@@ -1,6 +1,5 @@
 #[macro_use]
 mod utils;
-mod config;
 mod image;
 mod prelude;
 mod project;

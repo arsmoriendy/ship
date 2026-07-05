@@ -4,7 +4,7 @@ pub use ratatui::{
     DefaultTerminal,
     crossterm::{
         ExecutableCommand,
-        event::{self, Event, KeyCode, KeyEvent},
+        event::{self, Event, KeyEvent},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
     },
     macros::{constraints, horizontal, line as l, span, text, vertical},

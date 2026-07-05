@@ -1,18 +1,19 @@
 mod actions;
 mod component;
+mod config;
 mod external_command;
 mod prelude;
 mod state;
 mod widgets;
 
 use crate::{
-    config::Config,
     prelude::*,
     project::Project,
     store::Store,
     tui::{
         actions::Action,
         component::Component,
+        config::Config,
         state::{AppState, Focus},
         widgets::RootWidget,
     },
@@ -89,6 +90,7 @@ impl App {
 
             if let Err(e) = self.handle_action(action, terminal).await {
                 let mut mtx = self.state.lock().await;
+                mtx.focus = Focus::Popup(Box::new(mtx.focus.clone()));
                 mtx.popup = Some(state::PopupVariant::Error(e.to_string()))
             };
         }
@@ -103,14 +105,12 @@ impl App {
         match action {
             Action::SelectUp => self.select_up().await?,
             Action::SelectDown => self.select_down().await?,
-            Action::Focus(focus) => match focus {
-                Focus::Images => self.focus_images().await?,
-                Focus::Projects => self.focus_projects().await?,
-            },
+            Action::FocusImages => self.focus_images().await?,
+            Action::FocusProjects => self.focus_projects().await?,
+            Action::ClosePopup => self.close_popup().await?,
             Action::PushImage => self.push_image(terminal).await?,
             Action::DeleteImage => self.delete_image(terminal).await?,
             Action::FetchDigests => self.fetch_digests().await?,
-            Action::ClosePopup => self.close_popup().await?,
             Action::Quit => self.quit().await?,
             _ => {}
         };

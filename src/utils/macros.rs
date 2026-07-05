@@ -30,8 +30,10 @@ macro_rules! add_app_action {
 macro_rules! handle_spawn_error {
     ($state:expr, $handle:expr) => {
         tokio::spawn(async move {
+            use crate::tui::state::Focus;
             if let Err(err) = $handle.await.unwrap() {
                 let mut mtx = $state.lock().await;
+                mtx.focus = Focus::Popup(Box::new(mtx.focus.clone()));
                 mtx.popup = Some(ErrorPopup(err.to_string()))
             }
         });

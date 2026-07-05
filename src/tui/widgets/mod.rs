@@ -6,7 +6,7 @@ mod project_list;
 
 use ratatui::text::ToText;
 
-use crate::tui::state::PopupVariant;
+use crate::tui::{state::PopupVariant, widgets::popup::PopupComponent};
 
 use super::{
     actions::Action,
@@ -69,28 +69,24 @@ impl Component<&mut AppState> for RootWidget {
         let focused_act = match state.focus {
             Focus::Projects => self.project_list.handle_events(event, state).await,
             Focus::Images => self.image_list.handle_events(event, state).await,
+            Focus::Popup(_) => PopupComponent::default().handle_events(event, state).await,
         };
+
+        if focused_act != Action::Noop {
+            return focused_act;
+        }
 
         let global_act = match event {
             Event::Key(ke) => self.handle_key_events(ke, state).await,
             _ => Action::Noop,
         };
 
-        match focused_act {
-            Action::Noop => global_act,
-            _ => focused_act,
-        }
+        return global_act;
     }
 
     async fn handle_key_events(&mut self, ke: &KeyEvent, state: &mut AppState) -> Action {
-        match ke.code {
-            KeyCode::Char('j') | KeyCode::Down => Action::SelectDown,
-            KeyCode::Char('k') | KeyCode::Up => Action::SelectUp,
-            KeyCode::Char('q') | KeyCode::Esc => match state.popup {
-                Some(_) => Action::ClosePopup,
-                None => Action::Quit,
-            },
-            _ => Action::Noop,
-        }
+        state
+            .config
+            .match_actions(ke, &[Action::SelectDown, Action::SelectUp, Action::Quit])
     }
 }

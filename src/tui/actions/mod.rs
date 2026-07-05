@@ -1,4 +1,4 @@
-use crate::tui::state::Focus;
+use crate::prelude::*;
 
 mod close_popup;
 mod delete_image;
@@ -10,11 +10,13 @@ mod quit;
 mod select_down;
 mod select_up;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[serde(rename_all = "camelCase")]
 pub enum Action {
     SelectUp,
     SelectDown,
-    Focus(Focus),
+    FocusImages,
+    FocusProjects,
     PushImage,
     DeleteImage,
     FetchDigests,

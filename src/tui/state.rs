@@ -1,21 +1,12 @@
 use crate::{
-    config::{Config, RegistryCommands},
     image::Image,
     project::Project,
     store::Store,
-    tui::prelude::*,
+    tui::{
+        config::{Config, RegistryCommands},
+        prelude::*,
+    },
 };
-
-#[derive(PartialEq, Clone, Debug)]
-pub enum Focus {
-    Projects,
-    Images,
-}
-
-pub enum PopupVariant {
-    Info(String),
-    Error(String),
-}
 
 pub struct AppState {
     pub projects: Vec<Project>,
@@ -32,6 +23,19 @@ pub struct AppState {
     pub popup: Option<PopupVariant>,
 
     pub focus: Focus,
+}
+
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, Eq, Hash)]
+#[serde(rename_all = "camelCase")]
+pub enum Focus {
+    Projects,
+    Images,
+    Popup(Box<Focus>),
+}
+
+pub enum PopupVariant {
+    Info(String),
+    Error(String),
 }
 
 impl AppState {

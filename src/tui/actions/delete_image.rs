@@ -1,4 +1,4 @@
-use crate::{config::CommandBehaviour, tui::external_command::ExternalCommand};
+use crate::tui::{config::CommandBehaviour, external_command::ExternalCommand};
 
 add_app_action!(delete_image, state, terminal, {
     let mtx = state.lock().await;
