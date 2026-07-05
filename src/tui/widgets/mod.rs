@@ -51,7 +51,7 @@ impl StatefulWidget for &mut RootWidget {
         self.project_list.render(projects, buf, state);
         self.image_list.render(images, buf, state);
         self.footer.render(footer, buf, state);
-        if let Some(pop) = &state.popup {
+        if let Some(pop) = &state.popup.clone() {
             let (title, content, style) = match pop {
                 PopupVariant::Info(s) => ("Info", s.to_text(), Style::default()),
                 PopupVariant::Error(s) => ("Error", s.to_text(), Style::default().red()),
@@ -60,7 +60,7 @@ impl StatefulWidget for &mut RootWidget {
                 .title(title)
                 .content(content)
                 .style(style)
-                .render(popup, buf);
+                .render(popup, buf, state);
         }
     }
 }

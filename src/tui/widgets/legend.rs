@@ -5,17 +5,15 @@ pub struct Legend {
     actions: &'static [Action],
 }
 
-impl StatefulWidget for &mut Legend {
-    type State = AppState;
-
-    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+impl Legend {
+    pub fn as_line<'a>(&self, state: &mut AppState) -> Line<'a> {
         let legend = self
             .actions
             .iter()
             .map(|a| {
                 [
                     span![a].yellow(),
-                    span![": "],
+                    ": ".white(),
                     state
                         .config
                         .action_keymaps(&a)
@@ -33,12 +31,19 @@ impl StatefulWidget for &mut Legend {
                         })
                         .collect::<Vec<String>>()
                         .join(", ")
-                        .into(),
+                        .white(),
                 ]
             })
             .collect::<Vec<_>>()
             .join(&span![" | "].blue());
+        Line::from(legend)
+    }
+}
 
-        Line::from(legend).render(area, buf);
+impl StatefulWidget for &mut Legend {
+    type State = AppState;
+
+    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+        self.as_line(state).render(area, buf);
     }
 }

@@ -7,7 +7,7 @@ pub use ratatui::{
         event::{self, Event, KeyEvent},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
     },
-    macros::{constraints, horizontal, line as l, span, text, vertical},
+    macros::{constraints, horizontal, line as l, span, vertical},
     prelude::*,
     style::{Color, Style},
     widgets::{

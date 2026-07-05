@@ -1,4 +1,10 @@
-use crate::tui::{actions::Action, component::Component, prelude::*, state::AppState};
+use crate::tui::{
+    actions::{Action, POPUP_ACTIONS},
+    component::Component,
+    prelude::*,
+    state::AppState,
+    widgets::legend::Legend,
+};
 
 #[derive(Debug, Default, Setters)]
 pub struct Popup<'a> {
@@ -11,11 +17,13 @@ pub struct Popup<'a> {
     style: Style,
 }
 
-impl Widget for Popup<'_> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+impl StatefulWidget for Popup<'_> {
+    type State = AppState;
+    fn render(self, area: Rect, buf: &mut Buffer, state: &mut AppState) {
         Clear.render(area, buf);
         let block = Block::new()
             .title(self.title)
+            .title_top(Legend::new(&POPUP_ACTIONS).as_line(state).right_aligned())
             .title_style(self.title_style)
             .borders(Borders::ALL)
             .border_style(self.border_style);

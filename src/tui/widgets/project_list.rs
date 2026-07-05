@@ -1,10 +1,13 @@
 use crate::tui::{
     Focus,
-    actions::Action,
+    actions::{Action, PROJECT_ACTIONS},
     component::Component,
     prelude::*,
     state::AppState,
-    widgets::focusable::{focus_block, focus_table},
+    widgets::{
+        focusable::{focus_block, focus_table},
+        legend::Legend,
+    },
 };
 
 pub struct ProjectList {}
@@ -29,7 +32,11 @@ impl StatefulWidget for &mut ProjectList {
             .collect();
 
         let table = focus_table(is_focused)
-            .block(focus_block(is_focused).title("Projects"))
+            .block(
+                focus_block(is_focused)
+                    .title("Projects")
+                    .title_top(Legend::new(&PROJECT_ACTIONS).as_line(state).right_aligned()),
+            )
             .header(Row::new(["Name", "Images", "Registry"]).bold())
             .widths(constraints![*=1, ==10, *=1])
             .rows(rows);

@@ -33,6 +33,7 @@ pub enum Focus {
     Popup(Box<Focus>),
 }
 
+#[derive(Clone)]
 pub enum PopupVariant {
     Info(String),
     Error(String),

@@ -1,10 +1,13 @@
 use crate::tui::{
     Focus,
-    actions::Action,
+    actions::{Action, IMAGE_ACTIONS},
     component::Component,
     prelude::*,
     state::AppState,
-    widgets::focusable::{focus_block, focus_table},
+    widgets::{
+        focusable::{focus_block, focus_table},
+        legend::Legend,
+    },
 };
 
 pub struct ImageList {}
@@ -61,7 +64,11 @@ impl StatefulWidget for &mut ImageList {
             .collect();
         let is_focused = state.focus == Focus::Images;
         let table = focus_table(is_focused)
-            .block(focus_block(is_focused).title("Images"))
+            .block(
+                focus_block(is_focused)
+                    .title("Images")
+                    .title_top(Legend::new(&IMAGE_ACTIONS).as_line(state).right_aligned()),
+            )
             .widths(constraints![==6, ==8, ==8, *=1])
             .header(Row::new(["Pushed", "Id", "Digest", "Tags"]).bold())
             .rows(rows);
