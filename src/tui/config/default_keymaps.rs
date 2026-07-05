@@ -11,6 +11,9 @@ pub const DEFAULT_KEYMAP_STR: &'static str = r#"{
         "key": {
           "Char": "k"
         }
+      },
+      {
+        "key": "Up"
       }
     ],
     "selectDown": [
@@ -18,6 +21,9 @@ pub const DEFAULT_KEYMAP_STR: &'static str = r#"{
         "key": {
           "Char": "j"
         }
+      },
+      {
+        "key": "Down"
       }
     ],
     "pushImage": [
@@ -42,6 +48,12 @@ pub const DEFAULT_KEYMAP_STR: &'static str = r#"{
       }
     ],
     "quit": [
+      {
+        "key": {
+          "Char": "c"
+        },
+        "modifiers": "CONTROL"
+      },
       {
         "key": {
           "Char": "q"
