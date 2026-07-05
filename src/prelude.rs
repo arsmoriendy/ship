@@ -1,5 +1,6 @@
 pub use crate::utils::*;
 pub use anyhow::{Context as ErrorCtx, Result, anyhow};
+pub use derive_new::new;
 pub use derive_setters::Setters;
 pub use hex::encode as encode_hex;
 pub use serde::{Deserialize, Serialize};

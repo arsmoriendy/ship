@@ -1,6 +1,7 @@
 mod focusable;
 mod footer;
 mod image_list;
+mod legend;
 mod popup;
 mod project_list;
 
