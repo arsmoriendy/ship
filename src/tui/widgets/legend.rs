@@ -16,7 +16,7 @@ impl Legend {
                     ": ".white(),
                     state
                         .config
-                        .action_keymaps(&a)
+                        .action_keymaps(a)
                         .unwrap_or(&vec![])
                         .iter()
                         .map(|km| {

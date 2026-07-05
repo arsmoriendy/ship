@@ -77,12 +77,10 @@ impl Component<&mut AppState> for RootWidget {
             return focused_act;
         }
 
-        let global_act = match event {
+        match event {
             Event::Key(ke) => self.handle_key_events(ke, state).await,
             _ => Action::Noop,
-        };
-
-        return global_act;
+        }
     }
 
     async fn handle_key_events(&mut self, ke: &KeyEvent, state: &mut AppState) -> Action {

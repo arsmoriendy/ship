@@ -1,4 +1,4 @@
-pub const DEFAULT_KEYMAP_STR: &'static str = r#"{
+pub const DEFAULT_KEYMAP_STR: &str = r#"{
     "focusImages": [
       {
         "key": {

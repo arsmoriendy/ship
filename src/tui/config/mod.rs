@@ -42,10 +42,9 @@ impl Config {
     }
 
     pub fn action_keymaps(&self, act: &Action) -> Result<&Vec<KeyMap>> {
-        Ok(self
-            .keymaps
+        self.keymaps
             .get(act)
-            .ok_or(anyhow!("No configured keymaps for {:?}", act))?)
+            .ok_or(anyhow!("No configured keymaps for {:?}", act))
     }
 
     pub fn action_triggered(&self, act: &Action, key_event: &KeyEvent) -> bool {
@@ -63,7 +62,7 @@ impl Config {
             }
         }
 
-        return false;
+        false
     }
 
     pub fn match_actions(&self, key_event: &KeyEvent, actions: &[Action]) -> Action {
@@ -72,7 +71,7 @@ impl Config {
                 return act.clone();
             }
         }
-        return Action::Noop;
+        Action::Noop
     }
 }
 
