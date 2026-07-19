@@ -40,7 +40,7 @@ impl App {
         match terminal {
             None => {
                 let mut mtx = self.state.lock().await;
-                mtx.loading = Some(format!("Deleting image...",));
+                mtx.loading = Some("Deleting image...".to_string());
                 drop(mtx);
 
                 let st = self.state.clone();
