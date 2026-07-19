@@ -15,11 +15,30 @@ macro_rules! add_app_action {
             }
         }
     };
-    ($name:ident,  $state:ident, $terminal:ident, $block:block) => {
+    ($self:ident; $name:ident, $block:block) => {
+        use crate::tui::{App, prelude::*};
+        impl App {
+            pub async fn $name(&self) -> Result<()> {
+                let $self = self;
+                $block
+            }
+        }
+    };
+    ($name:ident, $state:ident, $terminal:ident, $block:block) => {
         use crate::tui::{App, prelude::*};
         impl App {
             pub async fn $name(&self, terminal: &mut DefaultTerminal) -> Result<()> {
                 let $state = &self.state;
+                let $terminal = terminal;
+                $block
+            }
+        }
+    };
+    ($self:ident; $name:ident, $terminal:ident, $block:block) => {
+        use crate::tui::{App, prelude::*};
+        impl App {
+            pub async fn $name(&self, terminal: &mut DefaultTerminal) -> Result<()> {
+                let $self = self;
                 let $terminal = terminal;
                 $block
             }

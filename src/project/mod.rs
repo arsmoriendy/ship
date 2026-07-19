@@ -18,7 +18,7 @@ impl Project {
         repository
             .split("/")
             .last()
-            .ok_or(anyhow!("failed parsing project name: {}", repository))
+            .ok_or(anyhow!("Failed parsing project name: {}", repository))
     }
 
     pub fn list() -> Result<Vec<Project>> {

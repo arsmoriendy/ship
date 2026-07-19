@@ -5,6 +5,7 @@ mod delete_image;
 mod fetch_digests;
 mod focus_images;
 mod focus_projects;
+mod prune_images;
 mod push_image;
 mod quit;
 mod select_down;
@@ -20,6 +21,7 @@ pub enum Action {
     PushImage,
     DeleteImage,
     FetchDigests,
+    PruneImages,
     Quit,
     Noop,
     ClosePopup,
@@ -37,6 +39,10 @@ pub const IMAGE_ACTIONS: [Action; 3] = [
     Action::DeleteImage,
 ];
 
-pub const PROJECT_ACTIONS: [Action; 2] = [Action::FocusImages, Action::FetchDigests];
+pub const PROJECT_ACTIONS: [Action; 3] = [
+    Action::FocusImages,
+    Action::FetchDigests,
+    Action::PruneImages,
+];
 
 pub const POPUP_ACTIONS: [Action; 1] = [Action::ClosePopup];

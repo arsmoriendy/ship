@@ -65,12 +65,21 @@ pub const DEFAULT_KEYMAP_STR: &str = r#"{
         "key": {
           "Char": "q"
         }
-      }
+      },
+      { "key": "Enter" },
+      { "key": "Esc" }
     ],
     "fetchDigests": [
       {
         "key": {
           "Char": "f"
+        }
+      }
+    ],
+    "pruneImages": [
+      {
+        "key": {
+          "Char": "P"
         }
       }
     ]
