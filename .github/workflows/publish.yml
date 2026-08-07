@@ -61,6 +61,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
+          tag_name: "$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')"
 
   publish-crate:
     name: Publish to crates.io
