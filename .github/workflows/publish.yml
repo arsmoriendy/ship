@@ -13,7 +13,6 @@ env:
 jobs:
   build-release:
     name: Build release (${{ matrix.target }})
-    needs: test
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
