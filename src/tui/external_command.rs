@@ -12,6 +12,12 @@ pub struct ExternalCommand<'a> {
 
 impl<'a> Drop for ExternalCommand<'a> {
     fn drop(&mut self) {
+        use crossterm::style::Stylize as CTStylize;
+        println!("{}", CTStylize::yellow("[ship] Press enter to continue"));
+
+        use std::io::Read;
+        stdin().lock().read(&mut []).unwrap();
+
         stdout().execute(EnterAlternateScreen).unwrap();
         enable_raw_mode().unwrap();
         self.terminal.clear().unwrap();

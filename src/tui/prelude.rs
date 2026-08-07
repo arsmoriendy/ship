@@ -14,5 +14,5 @@ pub use ratatui::{
         Block, Borders, Clear, Paragraph, Row, StatefulWidget, Table, TableState, Widget, Wrap,
     },
 };
-pub use std::io::stdout;
+pub use std::io::{stdin, stdout};
 pub const SPINNER_SEQUENCE: &[&str] = &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
