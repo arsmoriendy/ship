@@ -32,17 +32,11 @@ jobs:
       - name: Build (native)
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Package (Unix)
-        run: |
-          cd target/${{ matrix.target }}/release
-          tar czf ../../../ship-${{ matrix.target }}.tar.gz ship
-          cd -
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ship-${{ matrix.target }}
-          path: ship-${{ matrix.target }}.${{ matrix.archive_ext }}
+          path: target/${{ matrix.target }}/release/ship
 
   publish-release:
     name: Publish GitHub Release
@@ -51,13 +45,13 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
-
-      - uses: actions/checkout@v4
 
       - name: Get crate version
         id: version
