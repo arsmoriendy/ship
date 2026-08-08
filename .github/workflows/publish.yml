@@ -57,6 +57,8 @@ jobs:
           path: dist
           merge-multiple: true
 
+      - uses: actions/checkout@v4
+
       - name: Get crate version
         id: version
         shell: bash
