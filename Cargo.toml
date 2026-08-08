@@ -1,7 +1,11 @@
 [package]
-name = "ship"
+name = "ship-cli"
 version = "0.2.0"
 edition = "2024"
+
+[[bin]]
+name = "ship"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.102"
