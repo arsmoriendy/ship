@@ -57,11 +57,18 @@ jobs:
           path: dist
           merge-multiple: true
 
+      - name: Get crate version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
-          tag_name: "$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')"
+          tag_name: "v${{ steps.version.outputs.version }}"
 
   publish-crate:
     name: Publish to crates.io
