@@ -63,6 +63,8 @@ impl App {
 
                 let mut mtx = self.state.lock().await;
                 mtx.store.remove_digest(&project_name, &digest)?;
+                mtx.store
+                    .remove_remote_image(&project_name, &image.try_into()?)?;
             }
         }
 

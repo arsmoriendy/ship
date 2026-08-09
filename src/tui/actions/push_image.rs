@@ -1,24 +1,25 @@
-use crate::tui::{config::CommandBehaviour, external_command::ExternalCommand};
+use crate::{
+    image::RemoteImage,
+    tui::{config::CommandBehaviour, external_command::ExternalCommand},
+};
 
 add_app_action!(push_image, state, terminal, {
     let mtx = state.lock().await;
 
     let project = mtx.selected_project();
     let project_name = project.name.clone();
-    let image = mtx.selected_image();
+    let image = mtx.selected_image().clone();
+    let image_id = encode_hex(image.id);
     let reg = mtx
         .selected_registry()
         .ok_or(anyhow!("Selected project has no configured registry"))?;
-
-    let image_id = encode_hex(image.id);
-    let image_tags = image.tags.clone();
     let project_url = format!("{}/{}", reg, project.name);
 
     let behaviour = mtx.config.command_behaviours.push_image.clone();
 
     drop(mtx);
 
-    for tag in &image_tags {
+    for tag in &image.tags {
         let tag_url = format!("{}:{}", project_url, tag);
         let mut mtx = state.lock().await;
         match behaviour {
@@ -55,11 +56,8 @@ add_app_action!(push_image, state, terminal, {
                     .wait()?;
                 docker!("push", &tag_url).spawn()?.wait()?;
                 mtx.refresh_projects()?;
-                let digest = mtx
-                    .selected_image()
-                    .digest
-                    .ok_or(anyhow!("Image has no digest"))?;
-                mtx.store.push_digest(&project_name, &digest)?;
+                let remote_image: RemoteImage = mtx.selected_image().try_into()?;
+                mtx.store.push_remote_image(&project_name, remote_image)?;
             }
         }
     }

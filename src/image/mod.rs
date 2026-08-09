@@ -151,3 +151,15 @@ impl TryFrom<RawRemoteImage> for RemoteImage {
         })
     }
 }
+
+impl TryFrom<&Image> for RemoteImage {
+    type Error = ParseImageError;
+    fn try_from(image: &Image) -> Result<Self, Self::Error> {
+        Ok(RemoteImage {
+            digest: image
+                .digest
+                .ok_or(ParseImageError::Digest(String::from("<none>")))?,
+            tags: image.tags.clone(),
+        })
+    }
+}
