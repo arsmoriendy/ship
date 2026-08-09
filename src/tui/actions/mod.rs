@@ -2,7 +2,6 @@ use crate::prelude::*;
 
 mod close_popup;
 mod delete_image;
-mod fetch_digests;
 mod fetch_images;
 mod focus_images;
 mod focus_projects;
@@ -21,7 +20,6 @@ pub enum Action {
     FocusProjects,
     PushImage,
     DeleteImage,
-    FetchDigests,
     FetchImages,
     PruneImages,
     Quit,
@@ -41,9 +39,8 @@ pub const IMAGE_ACTIONS: [Action; 3] = [
     Action::DeleteImage,
 ];
 
-pub const PROJECT_ACTIONS: [Action; 4] = [
+pub const PROJECT_ACTIONS: [Action; 3] = [
     Action::FocusImages,
-    Action::FetchDigests,
     Action::FetchImages,
     Action::PruneImages,
 ];

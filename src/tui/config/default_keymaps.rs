@@ -69,7 +69,7 @@ pub const DEFAULT_KEYMAP_STR: &str = r#"{
       { "key": "Enter" },
       { "key": "Esc" }
     ],
-    "fetchDigests": [
+    "fetchImages": [
       {
         "key": {
           "Char": "f"

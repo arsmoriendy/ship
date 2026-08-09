@@ -51,7 +51,6 @@ impl Component<&mut AppState> for ProjectList {
             ke,
             &[
                 Action::FocusImages,
-                Action::FetchDigests,
                 Action::FetchImages,
                 Action::PruneImages,
             ],
