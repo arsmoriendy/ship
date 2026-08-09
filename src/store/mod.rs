@@ -61,4 +61,34 @@ impl Store {
             Ok(())
         })
     }
+
+    pub fn remove_remote_image(
+        &mut self,
+        project_name: &str,
+        remote_image: &RemoteImage,
+    ) -> Result<()> {
+        self.sync(|store| {
+            let remote_images = store
+                .project_remote_images
+                .get_mut(project_name)
+                .ok_or(anyhow!["Cannot find project"])?;
+            remote_images.retain(|ri| &ri.digest != &remote_image.digest);
+            Ok(())
+        })
+    }
+
+    pub fn push_remote_image(
+        &mut self,
+        project_name: &str,
+        remote_image: RemoteImage,
+    ) -> Result<()> {
+        self.sync(|store| {
+            let remote_images = store
+                .project_remote_images
+                .get_mut(project_name)
+                .ok_or(anyhow!["Cannot find project"])?;
+            remote_images.push(remote_image);
+            Ok(())
+        })
+    }
 }
