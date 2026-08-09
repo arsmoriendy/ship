@@ -1,8 +1,9 @@
-use crate::prelude::*;
+use crate::{image::RemoteImage, prelude::*};
 
 #[derive(Deserialize, Serialize, Default)]
 pub struct Store {
     pub project_registry_digests: HashMap<String, Vec<[u8; 32]>>,
+    pub project_remote_images: HashMap<String, Vec<RemoteImage>>,
 }
 
 impl Store {

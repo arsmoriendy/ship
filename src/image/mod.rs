@@ -128,3 +128,29 @@ impl Image {
         Ok(images)
     }
 }
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct RemoteImage {
+    pub digest: Digest,
+    pub push_time: String,
+    pub tags: Vec<String>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct RawRemoteImage {
+    pub digest: String,
+    pub push_time: String,
+    pub tags: Vec<String>,
+}
+
+impl TryFrom<RawRemoteImage> for RemoteImage {
+    type Error = ParseImageError;
+    fn try_from(raw: RawRemoteImage) -> Result<Self, Self::Error> {
+        Ok(RemoteImage {
+            digest: parse_prefixed_sha256(&raw.digest)
+                .map_err(|_| ParseImageError::Digest(raw.digest.clone()))?,
+            tags: raw.tags,
+            push_time: raw.push_time,
+        })
+    }
+}

@@ -80,6 +80,7 @@ impl Config {
 pub struct RegistryCommands {
     pub delete_image: String,
     pub list_digests: String,
+    pub list_images: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, SmartDefault)]

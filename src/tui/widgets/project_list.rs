@@ -52,6 +52,7 @@ impl Component<&mut AppState> for ProjectList {
             &[
                 Action::FocusImages,
                 Action::FetchDigests,
+                Action::FetchImages,
                 Action::PruneImages,
             ],
         )
