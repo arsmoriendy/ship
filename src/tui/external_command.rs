@@ -1,4 +1,5 @@
 use super::prelude::*;
+use std::io::BufRead;
 
 macro_rules! sh {
     ($cmd:expr) => {
@@ -13,10 +14,9 @@ pub struct ExternalCommand<'a> {
 impl<'a> Drop for ExternalCommand<'a> {
     fn drop(&mut self) {
         use crossterm::style::Stylize as CTStylize;
-        println!("{}", CTStylize::yellow("[ship] Press enter to continue"));
 
-        use std::io::Read;
-        stdin().lock().read(&mut []).unwrap();
+        println!("{}", CTStylize::yellow("[ship] Press enter to continue"));
+        stdin().lock().read_line(&mut String::new()).unwrap();
 
         stdout().execute(EnterAlternateScreen).unwrap();
         enable_raw_mode().unwrap();
