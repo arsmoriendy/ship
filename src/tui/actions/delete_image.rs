@@ -44,12 +44,14 @@ impl App {
                 drop(mtx);
 
                 let st = self.state.clone();
+                let image = image.clone();
                 let handle: JoinHandle<Result<()>> = tokio::task::spawn(async move {
                     ExternalCommand::sh(&cmd)?;
 
                     let mut mtx = st.lock().await;
                     mtx.loading = None;
-                    mtx.store.remove_digest(&project_name, &digest)?;
+                    mtx.store
+                        .remove_remote_image(&project_name, &(&image).try_into()?)?;
                     drop(mtx);
 
                     Ok(())
@@ -62,7 +64,6 @@ impl App {
                 ExternalCommand::shout(&cmd, terminal)?;
 
                 let mut mtx = self.state.lock().await;
-                mtx.store.remove_digest(&project_name, &digest)?;
                 mtx.store
                     .remove_remote_image(&project_name, &image.try_into()?)?;
             }

@@ -20,9 +20,8 @@ impl StatefulWidget for &mut ImageList {
         for img in &project.images {
             let mut spans: Vec<Span> = vec![];
             let pushed = if let Some(digest) = img.digest
-                && let Some(project_digests) =
-                    state.store.project_registry_digests.get(&project.name)
-                && project_digests.contains(&digest)
+                && let Some(remote_images) = state.store.project_remote_images.get(&project.name)
+                && remote_images.iter().any(|ri| ri.digest == digest)
             {
                 true
             } else {

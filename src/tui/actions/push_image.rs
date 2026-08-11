@@ -36,11 +36,8 @@ add_app_action!(push_image, state, terminal, {
 
                     let mut mtx = st.lock().await;
                     mtx.refresh_projects()?;
-                    let digest = mtx
-                        .selected_image()
-                        .digest
-                        .ok_or(anyhow!("Selceted image has not digest"))?;
-                    mtx.store.push_digest(&project_name, &digest)?;
+                    let remote_image: RemoteImage = mtx.selected_image().try_into()?;
+                    mtx.store.push_remote_image(&project_name, remote_image)?;
                     mtx.loading = None;
 
                     Ok(())

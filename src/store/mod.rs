@@ -2,7 +2,6 @@ use crate::{image::RemoteImage, prelude::*};
 
 #[derive(Deserialize, Serialize, Default)]
 pub struct Store {
-    pub project_registry_digests: HashMap<String, Vec<[u8; 32]>>,
     pub project_remote_images: HashMap<String, Vec<RemoteImage>>,
 }
 
@@ -38,28 +37,6 @@ impl Store {
         setter(self)?;
         self.save()?;
         Ok(())
-    }
-
-    pub fn remove_digest(&mut self, project_name: &str, digest: &[u8; 32]) -> Result<()> {
-        self.sync(|store| {
-            let digests = store
-                .project_registry_digests
-                .get_mut(project_name)
-                .ok_or(anyhow!["Cannot find digest"])?;
-            digests.retain(|d| d != digest);
-            Ok(())
-        })
-    }
-
-    pub fn push_digest(&mut self, project_name: &str, digest: &[u8; 32]) -> Result<()> {
-        self.sync(|store| {
-            let digests = store
-                .project_registry_digests
-                .get_mut(project_name)
-                .ok_or(anyhow!["Cannot find digest"])?;
-            digests.push(*digest);
-            Ok(())
-        })
     }
 
     pub fn remove_remote_image(

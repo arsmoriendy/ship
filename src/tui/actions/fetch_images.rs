@@ -24,7 +24,8 @@ add_app_action!(fetch_images, state, {
         drop(mtx);
 
         let res = ExternalCommand::sh(&cmd)?;
-        let raw_images: Vec<RawRemoteImage> = serde_json::from_str(res.as_str())?;
+        let raw_images: Vec<RawRemoteImage> = serde_json::from_str(res.as_str())
+            .with_context(|| format!("Failed parsing \"{res}\""))?;
         let images: Vec<RemoteImage> = raw_images
             .into_iter()
             .map(|r| r.try_into())
