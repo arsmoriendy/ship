@@ -36,7 +36,7 @@ impl<'a> ExternalCommand<'a> {
         let res = sh!(cmd).output()?;
         if !res.status.success() {
             return Err(anyhow!("{}", String::from_utf8(res.stderr)?))
-                .with_context(|| format!("failed to run command: \"{}\"", cmd));
+                .with_context(|| format!("Unsuccessful command \"{}\"", cmd));
         }
         Ok(String::from_utf8(res.stdout)?)
     }
@@ -45,7 +45,7 @@ impl<'a> ExternalCommand<'a> {
         let _cmd = Self::init(terminal);
         let status = sh!(cmd).spawn()?.wait()?;
         if !status.success() {
-            return Err(anyhow!("failed to run command: \"{}\"", cmd));
+            return Err(anyhow!("Unsuccessful command \"{}\"", cmd));
         }
         Ok(())
     }

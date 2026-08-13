@@ -50,8 +50,12 @@ impl App {
 
                     let mut mtx = st.lock().await;
                     mtx.loading = None;
-                    mtx.store
-                        .remove_remote_image(&project_name, &(&image).try_into()?)?;
+                    mtx.store.remove_remote_image(
+                        &project_name,
+                        &(&image)
+                            .try_into()
+                            .with_context(|| format!("From image: {image:?}"))?,
+                    )?;
                     drop(mtx);
 
                     Ok(())

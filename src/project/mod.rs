@@ -15,10 +15,10 @@ impl Project {
     }
 
     pub fn get_project_name(repository: &str) -> Result<&str> {
-        repository
-            .split("/")
-            .last()
-            .ok_or(anyhow!("Failed parsing project name: {}", repository))
+        repository.split("/").last().ok_or(anyhow!(
+            "Failed parsing project name from repository: \"{}\"",
+            repository
+        ))
     }
 
     pub fn list() -> Result<Vec<Project>> {

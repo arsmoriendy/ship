@@ -23,13 +23,14 @@ add_app_action!(fetch_images, state, {
         mtx.loading = Some("Fetching images...".to_owned());
         drop(mtx);
 
-        let res = ExternalCommand::sh(&cmd)?;
+        let res = ExternalCommand::sh(&cmd).with_context(|| "Failed to run list images command")?;
         let raw_images: Vec<RawRemoteImage> = serde_json::from_str(res.as_str())
-            .with_context(|| format!("Failed parsing \"{res}\""))?;
+            .with_context(|| format!("Failed parsing list images command result: \"{res}\""))?;
         let images: Vec<RemoteImage> = raw_images
             .into_iter()
             .map(|r| r.try_into())
-            .collect::<Result<_, _>>()?;
+            .collect::<Result<_, _>>()
+            .with_context(|| "Failed to parse remote images from the list images command")?;
 
         let mut mtx = st.lock().await;
         mtx.store.sync(|store| {

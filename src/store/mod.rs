@@ -48,7 +48,7 @@ impl Store {
             let remote_images = store
                 .project_remote_images
                 .get_mut(project_name)
-                .ok_or(anyhow!["Cannot find project"])?;
+                .ok_or(anyhow!["Cannot find project \"{project_name}\""])?;
             remote_images.retain(|ri| &ri.digest != &remote_image.digest);
             Ok(())
         })
