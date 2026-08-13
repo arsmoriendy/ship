@@ -79,7 +79,6 @@ impl Config {
 #[serde(rename_all = "camelCase")]
 pub struct RegistryCommands {
     pub delete_image: String,
-    pub list_digests: String,
     pub list_images: String,
 }
 
