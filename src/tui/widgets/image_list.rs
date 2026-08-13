@@ -16,25 +16,7 @@ impl StatefulWidget for &mut ImageList {
     type State = AppState;
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut AppState) {
         let project = &state.selected_project();
-        let mut lines: Vec<Line> = vec![];
-        for img in &project.images {
-            let mut spans: Vec<Span> = vec![];
-            let pushed = if let Some(digest) = img.digest
-                && let Some(remote_images) = state.store.project_remote_images.get(&project.name)
-                && remote_images.iter().any(|ri| ri.digest == digest)
-            {
-                true
-            } else {
-                false
-            };
-            spans.push(if pushed { "✔ " } else { "  " }.light_green());
-            spans.push(encode_hex(img.id)[0..8].to_owned().light_green());
-            spans.push(Span::from(" "));
-            spans.push(Span::from(img.tags.join(", ")));
-            lines.push(Line::from(spans))
-        }
-        let rows: Vec<Row> = state
-            .selected_project()
+        let rows: Vec<Row> = project
             .images
             .iter()
             .map(|img| {
