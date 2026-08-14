@@ -129,7 +129,7 @@ impl Image {
     }
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct RemoteImage {
     pub digest: Digest,
     pub tags: Vec<String>,
