@@ -60,11 +60,14 @@ impl Store {
         remote_image: RemoteImage,
     ) -> Result<()> {
         self.sync(|store| {
-            let remote_images = store
-                .project_remote_images
-                .get_mut(project_name)
-                .ok_or(anyhow!["Cannot find project"])?;
-            remote_images.push(remote_image);
+            match store.project_remote_images.get_mut(project_name) {
+                Some(remote_images) => remote_images.push(remote_image),
+                None => {
+                    store
+                        .project_remote_images
+                        .insert(project_name.to_owned(), vec![remote_image]);
+                }
+            };
             Ok(())
         })
     }
