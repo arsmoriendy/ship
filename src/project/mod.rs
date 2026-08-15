@@ -1,9 +1,9 @@
-use crate::{image::Image, prelude::*};
+use crate::{image::LocalImage, prelude::*};
 
 #[derive(Clone)]
 pub struct Project {
     pub name: String,
-    pub images: Vec<Image>,
+    pub images: Vec<LocalImage>,
 }
 
 impl Project {
@@ -23,7 +23,7 @@ impl Project {
 
     pub fn list() -> Result<Vec<Project>> {
         let mut projects: Vec<Project> = vec![];
-        let images = Image::list()?;
+        let images = LocalImage::list()?;
         for img in images {
             let repo = img.repository.clone();
             let project_name = Project::get_project_name(repo.as_str())?;

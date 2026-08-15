@@ -1,5 +1,5 @@
 use crate::{
-    image::Image,
+    image::LocalImage,
     project::Project,
     tui::{config::CommandBehaviour, external_command::ExternalCommand},
 };
@@ -21,7 +21,7 @@ add_app_action!(slf; delete_image, terminal, {
 impl App {
     pub async fn _delete_image(
         &self,
-        image: &Image,
+        image: &LocalImage,
         terminal: Option<&mut DefaultTerminal>,
     ) -> Result<()> {
         let project_name = Project::get_project_name(&image.repository)?.to_owned();

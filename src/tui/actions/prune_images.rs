@@ -1,9 +1,9 @@
-use crate::image::Image;
+use crate::image::LocalImage;
 
 add_app_action!(slf; prune_images, terminal, {
     let mtx = slf.state.lock().await;
     let Some(remote_images)=mtx.store.project_remote_images.get(mtx.selected_project().name.as_str())else { return Ok(()) };
-    let images: Vec<Image> = mtx.selected_project().images.clone().into_iter().filter(|i| {
+    let images: Vec<LocalImage> = mtx.selected_project().images.clone().into_iter().filter(|i| {
         let Some(digest)=i.digest else {return false};
         remote_images.iter().any(|ri|ri.digest==digest)
     }).collect();

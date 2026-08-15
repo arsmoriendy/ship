@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
-pub struct RawImage {
+pub struct RawLocalImage {
     pub containers: String,
     pub created_at: String,
     pub created_since: String,
@@ -19,7 +19,7 @@ pub struct RawImage {
 pub type Digest = [u8; 32];
 
 #[derive(Debug, Clone)]
-pub struct Image {
+pub struct LocalImage {
     pub containers: u64,
     pub digest: Option<Digest>,
     pub id: [u8; 32],
@@ -45,10 +45,10 @@ pub enum ParseImageError {
     Digest(String),
 }
 
-impl TryFrom<&RawImage> for Image {
+impl TryFrom<&RawLocalImage> for LocalImage {
     type Error = ParseImageError;
-    fn try_from(raw: &RawImage) -> Result<Self, Self::Error> {
-        Ok(Image {
+    fn try_from(raw: &RawLocalImage) -> Result<Self, Self::Error> {
+        Ok(LocalImage {
             containers: raw
                 .containers
                 .parse()
@@ -75,8 +75,8 @@ impl TryFrom<&RawImage> for Image {
     }
 }
 
-impl Image {
-    pub fn list() -> Result<Vec<Image>> {
+impl LocalImage {
+    pub fn list() -> Result<Vec<LocalImage>> {
         let res = docker!(
             "image",
             "list",
@@ -94,13 +94,13 @@ impl Image {
         let out_str = String::from_utf8(out).with_context(|| "Failed parsing stdout")?;
         let mut img_strs = out_str.split("\n").peekable();
 
-        let mut images: Vec<Image> = vec![];
+        let mut images: Vec<LocalImage> = vec![];
         loop {
             if let Some(img_str) = img_strs.next()
         // ignore last string, i.e, trailing "\n"
             && img_strs.peek().is_some()
             {
-                let raw = serde_json::from_str::<RawImage>(img_str)
+                let raw = serde_json::from_str::<RawLocalImage>(img_str)
                     .with_context(|| "Failed to parse image")?;
                 let id =
                     parse_prefixed_sha256(&raw.id).with_context(|| "Failed to parse image id")?;
@@ -112,7 +112,7 @@ impl Image {
                         img.digest = Some(parse_prefixed_sha256(raw.digest.as_str())?);
                     }
                 } else {
-                    let parsed: Image =
+                    let parsed: LocalImage =
                         (&raw).try_into().with_context(|| "Failed to parse image")?;
                     let pos = match images.binary_search_by(|img| img.id.cmp(&parsed.id)) {
                         Ok(p) => p,
@@ -152,9 +152,9 @@ impl TryFrom<RawRemoteImage> for RemoteImage {
     }
 }
 
-impl TryFrom<&Image> for RemoteImage {
+impl TryFrom<&LocalImage> for RemoteImage {
     type Error = ParseImageError;
-    fn try_from(image: &Image) -> Result<Self, Self::Error> {
+    fn try_from(image: &LocalImage) -> Result<Self, Self::Error> {
         Ok(RemoteImage {
             digest: image
                 .digest

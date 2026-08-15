@@ -1,5 +1,5 @@
 use crate::{
-    image::{Digest, Image, RemoteImage},
+    image::{Digest, LocalImage, RemoteImage},
     tui::{
         Focus,
         actions::{Action, IMAGE_ACTIONS},
@@ -19,8 +19,8 @@ struct ImageListRow {
     tags: Vec<String>,
 }
 
-impl From<&Image> for ImageListRow {
-    fn from(image: &Image) -> Self {
+impl From<&LocalImage> for ImageListRow {
+    fn from(image: &LocalImage) -> Self {
         Self {
             digest: image.digest,
             id: Some(image.id),

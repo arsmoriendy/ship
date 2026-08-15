@@ -1,5 +1,5 @@
 use crate::{
-    image::Image,
+    image::LocalImage,
     project::Project,
     store::Store,
     tui::{
@@ -44,7 +44,7 @@ impl AppState {
         &self.projects[self.project_table_state.selected().unwrap()]
     }
 
-    pub fn selected_image(&self) -> &Image {
+    pub fn selected_image(&self) -> &LocalImage {
         &self.selected_project().images[self.image_table_state.selected().unwrap()]
     }
 
