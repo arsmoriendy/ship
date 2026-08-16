@@ -17,12 +17,13 @@ pub struct RawLocalImage {
 }
 
 pub type Digest = [u8; 32];
+pub type Id = [u8; 32];
 
 #[derive(Debug, Clone)]
 pub struct LocalImage {
     pub containers: u64,
     pub digest: Option<Digest>,
-    pub id: [u8; 32],
+    pub id: Id,
     pub tags: Vec<String>,
 
     pub created_at: String,
@@ -162,4 +163,10 @@ impl TryFrom<&LocalImage> for RemoteImage {
             tags: image.tags.clone(),
         })
     }
+}
+
+#[derive(Clone)]
+pub enum Image {
+    Local(LocalImage),
+    Remote(RemoteImage),
 }

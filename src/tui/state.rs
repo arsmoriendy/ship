@@ -1,5 +1,5 @@
 use crate::{
-    image::LocalImage,
+    image::{Image, LocalImage},
     project::Project,
     store::Store,
     tui::{
@@ -44,8 +44,26 @@ impl AppState {
         &self.projects[self.project_table_state.selected().unwrap()]
     }
 
-    pub fn selected_image(&self) -> &LocalImage {
+    pub fn selected_image(&self) -> &Image {
         &self.selected_project().images[self.image_table_state.selected().unwrap()]
+    }
+
+    pub fn find_project_with_name(&self, name: &str) -> Option<&Project> {
+        self.projects.iter().find(|proj| proj.name == name)
+    }
+
+    pub fn try_find_project_with_name(&self, name: &str) -> Result<&Project> {
+        self.find_project_with_name(name)
+            .ok_or(anyhow!("Cannot find project \"{name}\""))
+    }
+
+    pub fn try_find_local_image_with_id(
+        &self,
+        project_name: &str,
+        id: &crate::image::Id,
+    ) -> Result<&LocalImage> {
+        self.try_find_project_with_name(project_name)?
+            .try_find_local_image_with_id(id)
     }
 
     pub fn selected_registry(&self) -> Option<&String> {

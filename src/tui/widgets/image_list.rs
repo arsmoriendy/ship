@@ -1,5 +1,5 @@
 use crate::{
-    image::{Digest, LocalImage, RemoteImage},
+    image::{Digest, Image, LocalImage, RemoteImage},
     tui::{
         Focus,
         actions::{Action, IMAGE_ACTIONS},
@@ -17,6 +17,15 @@ struct ImageListRow {
     id: Option<[u8; 32]>,
     digest: Option<Digest>,
     tags: Vec<String>,
+}
+
+impl From<&Image> for ImageListRow {
+    fn from(image: &Image) -> Self {
+        match image {
+            Image::Local(li) => li.into(),
+            Image::Remote(ri) => ri.into(),
+        }
+    }
 }
 
 impl From<&LocalImage> for ImageListRow {
@@ -79,10 +88,9 @@ impl StatefulWidget for &mut ImageList {
             .iter()
             .map(|img| {
                 let row: ImageListRow = img.into();
-                let mut spans: Vec<Span> = row.into();
 
-                let remote = if let Some(digest) = img.digest
-                    && let Some(i) = remote_images.iter().position(|ri| ri.digest == digest)
+                let remote = if let Some(digest) = &row.digest
+                    && let Some(i) = remote_images.iter().position(|ri| &ri.digest == digest)
                 {
                     remote_images.swap_remove(i);
                     "✓".to_owned().light_green()
@@ -90,6 +98,7 @@ impl StatefulWidget for &mut ImageList {
                     "⨯".to_owned().red()
                 };
 
+                let mut spans: Vec<Span> = row.into();
                 spans.insert(0, remote);
                 spans.insert(0, "✓".to_owned().light_green());
 

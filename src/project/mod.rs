@@ -1,9 +1,12 @@
-use crate::{image::LocalImage, prelude::*};
+use crate::{
+    image::{Image, LocalImage},
+    prelude::*,
+};
 
 #[derive(Clone)]
 pub struct Project {
     pub name: String,
-    pub images: Vec<LocalImage>,
+    pub images: Vec<Image>,
 }
 
 impl Project {
@@ -28,13 +31,32 @@ impl Project {
             let repo = img.repository.clone();
             let project_name = Project::get_project_name(repo.as_str())?;
             if let Some(project) = projects.iter_mut().find(|p| p.name == project_name) {
-                project.images.push(img)
+                project.images.push(Image::Local(img))
             } else {
                 let mut new_project = Project::new(project_name);
-                new_project.images.push(img);
+                new_project.images.push(Image::Local(img));
                 projects.push(new_project);
             }
         }
         Ok(projects)
+    }
+
+    pub fn find_image_with_id(&self, id: &crate::image::Id) -> Option<&Image> {
+        self.images.iter().find(|img| match img {
+            Image::Local(img) => &img.id == id,
+            _ => false,
+        })
+    }
+
+    pub fn try_find_image_with_id(&self, id: &crate::image::Id) -> Result<&Image> {
+        self.find_image_with_id(id)
+            .ok_or(anyhow!("Cannot find image"))
+    }
+
+    pub fn try_find_local_image_with_id(&self, id: &crate::image::Id) -> Result<&LocalImage> {
+        match self.try_find_image_with_id(id)? {
+            Image::Local(local_img) => Ok(local_img),
+            _ => Err(anyhow!("Image is not local")),
+        }
     }
 }

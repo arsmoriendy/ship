@@ -1,5 +1,5 @@
 use crate::{
-    image::LocalImage,
+    image::{Image, LocalImage},
     project::Project,
     tui::{config::CommandBehaviour, external_command::ExternalCommand},
 };
@@ -9,6 +9,8 @@ add_app_action!(slf; delete_image, terminal, {
     let image = mtx.selected_image().clone();
     let behaviour = mtx.config.command_behaviours.delete_image.clone();
     drop(mtx);
+
+    let Image::Local(image)=image else {return Err(anyhow!("Image is not local"))};
 
     match behaviour {
         CommandBehaviour::Async => slf._delete_image(&image, None).await?,

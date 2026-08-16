@@ -1,5 +1,5 @@
 use crate::{
-    image::RemoteImage,
+    image::{Image, RemoteImage},
     tui::{config::CommandBehaviour, external_command::ExternalCommand},
 };
 
@@ -8,7 +8,9 @@ add_app_action!(push_image, state, terminal, {
 
     let project = mtx.selected_project();
     let project_name = project.name.clone();
-    let image = mtx.selected_image().clone();
+    let Image::Local(image) = mtx.selected_image().clone() else {
+        return Err(anyhow!("Image already exist in remote registry"));
+    };
     let image_id = encode_hex(image.id);
     let reg = mtx
         .selected_registry()
@@ -36,7 +38,8 @@ add_app_action!(push_image, state, terminal, {
 
                     let mut mtx = st.lock().await;
                     mtx.refresh_projects()?;
-                    let remote_image: RemoteImage = mtx.selected_image().try_into()?;
+                    let local_image = mtx.try_find_local_image_with_id(&project_name, &image.id)?;
+                    let remote_image: RemoteImage = local_image.try_into()?;
                     mtx.store.push_remote_image(&project_name, remote_image)?;
                     mtx.loading = None;
 
@@ -53,7 +56,8 @@ add_app_action!(push_image, state, terminal, {
                     .wait()?;
                 docker!("push", &tag_url).spawn()?.wait()?;
                 mtx.refresh_projects()?;
-                let remote_image: RemoteImage = mtx.selected_image().try_into()?;
+                let local_image = mtx.try_find_local_image_with_id(&project_name, &image.id)?;
+                let remote_image: RemoteImage = local_image.try_into()?;
                 mtx.store.push_remote_image(&project_name, remote_image)?;
             }
         }
