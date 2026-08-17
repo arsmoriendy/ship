@@ -24,7 +24,7 @@ pub struct LocalImage {
     pub containers: u64,
     pub digest: Option<Digest>,
     pub id: Id,
-    pub tags: Vec<String>,
+    pub tags: BTreeSet<String>,
 
     pub created_at: String,
     pub created_since: String,
@@ -65,7 +65,7 @@ impl TryFrom<&RawLocalImage> for LocalImage {
             id: parse_prefixed_sha256(raw.id.as_str())
                 .map_err(|_| ParseImageError::Id(raw.id.clone()))?,
 
-            tags: vec![raw.tag.clone()],
+            tags: BTreeSet::from([raw.tag.clone()]),
             created_at: raw.created_at.clone(),
             created_since: raw.created_since.clone(),
             repository: raw.repository.clone(),
@@ -106,9 +106,7 @@ impl LocalImage {
                 let id =
                     parse_prefixed_sha256(&raw.id).with_context(|| "Failed to parse image id")?;
                 if let Some(img) = images.iter_mut().find(|img| img.id == id) {
-                    if !img.tags.contains(&raw.tag) {
-                        img.tags.push(raw.tag)
-                    };
+                    img.tags.insert(raw.tag);
                     if img.digest.is_none() && raw.digest != "<none>" {
                         img.digest = Some(parse_prefixed_sha256(raw.digest.as_str())?);
                     }
@@ -133,13 +131,13 @@ impl LocalImage {
 #[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct RemoteImage {
     pub digest: Digest,
-    pub tags: Vec<String>,
+    pub tags: BTreeSet<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct RawRemoteImage {
     pub digest: String,
-    pub tags: Vec<String>,
+    pub tags: BTreeSet<String>,
 }
 
 impl TryFrom<RawRemoteImage> for RemoteImage {

@@ -16,7 +16,7 @@ use crate::{
 struct ImageListRow {
     id: Option<[u8; 32]>,
     digest: Option<Digest>,
-    tags: Vec<String>,
+    tags: BTreeSet<String>,
 }
 
 impl From<&Image> for ImageListRow {
@@ -65,7 +65,9 @@ impl From<ImageListRow> for Vec<Span<'_>> {
 
         spans.push(id);
         spans.push(digest);
-        spans.push(Span::from(value.tags.join(", ")));
+        spans.push(Span::from(
+            value.tags.into_iter().collect::<Vec<_>>().join(", "),
+        ));
 
         spans
     }
