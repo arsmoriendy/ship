@@ -17,7 +17,7 @@ cargo install ship-tui
 Or build from source:
 
 ```sh
-git clone https://github.com/arsmoriendy/ship
+git clone https://github.com/arsmoriendy/ship --revision=latest
 cd ship
 cargo install --path .
 ```
