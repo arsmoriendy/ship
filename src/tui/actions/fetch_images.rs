@@ -34,10 +34,13 @@ add_app_action!(fetch_images, state, {
 
         let mut mtx = st.lock().await;
         mtx.store.sync(|store| {
-            store.project_remote_images.insert(project_name, images);
+            store
+                .project_remote_images
+                .insert(project_name.clone(), images);
             Ok(())
         })?;
         mtx.loading = None;
+        mtx.sync_project_images_from_store(project_name.as_str())?;
 
         Ok(())
     });

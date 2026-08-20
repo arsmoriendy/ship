@@ -31,10 +31,12 @@ impl App {
     pub fn new() -> Result<Self> {
         let projects = Project::list()?;
         let config = Config::new()?;
-        let state = Arc::new(Mutex::new(AppState {
+        let store = Store::load()?;
+
+        let mut state = AppState {
             projects,
             config,
-            store: Store::load()?,
+            store,
 
             loading: None,
             spinner_frame: 0,
@@ -46,10 +48,13 @@ impl App {
             popup: None,
 
             focus: Focus::Projects,
-        }));
+        };
+
+        state.sync_store_images();
+
         Ok(App {
             root_component: RootWidget::new(),
-            state,
+            state: Arc::new(Mutex::new(state)),
         })
     }
 

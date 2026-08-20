@@ -1,4 +1,4 @@
-use crate::image::LocalImage;
+use crate::image::{Image, LocalImage};
 
 use super::prelude::*;
 
@@ -34,5 +34,28 @@ impl TryFrom<&LocalImage> for RemoteImage {
                 .ok_or(ParseImageError::Digest(String::from("<none>")))?,
             tags: image.tags.clone(),
         })
+    }
+}
+
+macro_rules! merge_tags {
+    ($lhs:expr, $rhs:expr) => {
+        for tag in &$rhs.tags {
+            $lhs.tags.insert(tag.clone());
+        }
+    };
+}
+
+impl RemoteImage {
+    pub fn merge_with(&self, img: &mut Image) {
+        match img {
+            Image::Local(img) => {
+                img.digest = Some(self.digest);
+                merge_tags!(img, self);
+            }
+            Image::Remote(img) => {
+                img.digest = self.digest;
+                merge_tags!(img, self);
+            }
+        };
     }
 }

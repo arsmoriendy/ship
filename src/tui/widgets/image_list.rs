@@ -73,50 +73,45 @@ impl From<ImageListRow> for Vec<Span<'_>> {
     }
 }
 
+fn check_span<'a>(checked: bool) -> Span<'a> {
+    if checked {
+        "✓".to_owned().light_green()
+    } else {
+        "⨯".to_owned().red()
+    }
+}
+
 pub struct ImageList {}
 
 impl StatefulWidget for &mut ImageList {
     type State = AppState;
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut AppState) {
         let project = &state.selected_project();
-        let mut remote_images = state
+        let remote_images = state
             .store
             .project_remote_images
             .get(&project.name)
             .cloned()
             .unwrap_or(vec![]);
-        let mut rows: Vec<Row> = project
+        let rows: Vec<Row> = project
             .images
             .iter()
             .map(|img| {
                 let row: ImageListRow = img.into();
 
-                let remote = if let Some(digest) = &row.digest
-                    && let Some(i) = remote_images.iter().position(|ri| &ri.digest == digest)
-                {
-                    remote_images.swap_remove(i);
-                    "✓".to_owned().light_green()
-                } else {
-                    "⨯".to_owned().red()
-                };
+                let remote = check_span(match &row.digest {
+                    Some(digest) => remote_images.iter().any(|ri| &ri.digest == digest),
+                    None => false,
+                });
+                let local = check_span(matches!(img, Image::Local(_)));
 
                 let mut spans: Vec<Span> = row.into();
                 spans.insert(0, remote);
-                spans.insert(0, "✓".to_owned().light_green());
+                spans.insert(0, local);
 
                 Row::new(spans)
             })
             .collect();
-
-        remote_images.iter().for_each(|ri| {
-            let row: ImageListRow = ri.into();
-            let mut spans: Vec<Span> = row.into();
-
-            spans.insert(0, "✓".to_owned().light_green());
-            spans.insert(0, "⨯".to_owned().red());
-
-            rows.push(Row::new(spans));
-        });
 
         let is_focused = state.focus == Focus::Images;
         let table = focus_table(is_focused)

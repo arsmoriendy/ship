@@ -80,6 +80,43 @@ impl AppState {
 
     pub fn refresh_projects(&mut self) -> Result<()> {
         self.projects = Project::list()?;
+        self.sync_store_images();
         Ok(())
+    }
+
+    pub fn sync_project_images_from_store(&mut self, project_name: &str) -> Result<()> {
+        let Some(store_images) = self.store.project_remote_images.get(project_name) else {
+            return Err(anyhow!("Cannot find project \"{project_name}\" in store"));
+        };
+
+        let Some(project) = self
+            .projects
+            .iter_mut()
+            .find(|proj| proj.name == project_name)
+        else {
+            return Err(anyhow!("Cannot find project \"{project_name}\" in state"));
+        };
+
+        for store_img in store_images.iter() {
+            project.merge_remote_image(store_img);
+        }
+
+        Ok(())
+    }
+
+    pub fn sync_store_images(&mut self) {
+        for (project_name, store_images) in &self.store.project_remote_images {
+            let Some(project) = self
+                .projects
+                .iter_mut()
+                .find(|proj| proj.name == project_name.as_str())
+            else {
+                continue;
+            };
+
+            for store_img in store_images.iter() {
+                project.merge_remote_image(store_img);
+            }
+        }
     }
 }
