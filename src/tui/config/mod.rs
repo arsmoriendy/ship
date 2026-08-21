@@ -6,12 +6,13 @@ use crate::{
 };
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-#[derive(Deserialize, Serialize, Clone, Default)]
+#[derive(Deserialize, Serialize, Clone, SmartDefault)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
     pub project_registries: HashMap<String, String>,
     pub registry_commands: HashMap<String, RegistryCommands>,
     pub command_behaviours: CommandBehaviours,
+    #[default(Config::default_keymaps().unwrap())]
     pub keymaps: Keymaps,
 }
 
@@ -20,21 +21,50 @@ impl Config {
         let config_file = config_path()?;
 
         if !config_file.exists() {
-            let config_parent = config_file
-                .parent()
-                .with_context(|| anyhow!("failed to retrieve config file dirname"))?;
-            fs::create_dir_all(config_parent)?;
-            let config = Config {
-                keymaps: Self::default_keymaps()?,
-                ..Default::default()
-            };
-            fs::write(config_file, serde_json::to_string_pretty(&config)?)?;
-            return Ok(config);
+            let default_config = Config::create_and_write_default()?;
+            return Ok(default_config);
         }
 
         let config_str =
-            fs::read_to_string(config_file).with_context(|| "failed to read config file")?;
-        serde_json::from_str(&config_str).with_context(|| "failed to parse config file")
+            fs::read_to_string(config_file).with_context(|| "Failed to read config file")?;
+
+        match serde_json::from_str::<Self>(&config_str) {
+            Ok(config) => Ok(config),
+            Err(parsing_error) => {
+                if matches!(parsing_error.classify(), JsonErrorCategory::Data) {
+                    Config::create_backup().with_context(|| "Failed to create config backup")?;
+                    let default_config = Config::create_and_write_default()?;
+                    return Ok(default_config);
+                }
+                return Err(parsing_error.into());
+            }
+        }
+    }
+
+    pub fn create_backup() -> Result<()> {
+        let config_file = config_path()?;
+        let mut backup_file = config_file.clone();
+        backup_file.set_file_name(format!(
+            "config_backup_{}.json",
+            Local::now().format("%Y-%m-%dT%H:%M:%S%:z")
+        ));
+        fs::copy(config_file, backup_file)?;
+        Ok(())
+    }
+
+    pub fn create_and_write_default() -> Result<Config> {
+        let default_config = Config::default();
+        let config_file = config_path()?;
+        let config_parent = config_file
+            .parent()
+            .with_context(|| anyhow!("Failed to retrieve config file dirname"))?;
+
+        fs::create_dir_all(config_parent)
+            .with_context(|| anyhow!("Failed to create config directory"))?;
+        fs::write(config_file, serde_json::to_string_pretty(&default_config)?)
+            .with_context(|| anyhow!("Failed to write to config file"))?;
+
+        Ok(default_config)
     }
 
     pub fn default_keymaps() -> Result<Keymaps> {
