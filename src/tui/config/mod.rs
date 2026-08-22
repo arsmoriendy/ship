@@ -9,10 +9,14 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 #[derive(Deserialize, Serialize, Clone, SmartDefault)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
+    #[serde(default)]
     pub project_registries: HashMap<String, String>,
+    #[serde(default)]
     pub registry_commands: HashMap<String, RegistryCommands>,
+    #[serde(default)]
     pub command_behaviours: CommandBehaviours,
     #[default(Config::default_keymaps().unwrap())]
+    #[serde(default)]
     pub keymaps: Keymaps,
 }
 
@@ -28,17 +32,7 @@ impl Config {
         let config_str =
             fs::read_to_string(config_file).with_context(|| "Failed to read config file")?;
 
-        match serde_json::from_str::<Self>(&config_str) {
-            Ok(config) => Ok(config),
-            Err(parsing_error) => {
-                if matches!(parsing_error.classify(), JsonErrorCategory::Data) {
-                    Config::create_backup().with_context(|| "Failed to create config backup")?;
-                    let default_config = Config::create_and_write_default()?;
-                    return Ok(default_config);
-                }
-                return Err(parsing_error.into());
-            }
-        }
+        Ok(serde_json::from_str(&config_str)?)
     }
 
     pub fn create_backup() -> Result<()> {
@@ -116,7 +110,9 @@ pub struct RegistryCommands {
 #[serde(rename_all = "camelCase")]
 pub struct CommandBehaviours {
     #[default(CommandBehaviour::Interactive)]
+    #[serde(default)]
     pub push_image: CommandBehaviour,
+    #[serde(default)]
     pub delete_image: CommandBehaviour,
 }
 
