@@ -1,86 +1,76 @@
-pub const DEFAULT_KEYMAP_STR: &str = r#"{
-    "focusImages": [
-      {
-        "key": {
-          "Char": "J"
+use crate::tui::config::Keymaps;
+
+macro_rules! c_code {
+    ($char:expr) => {{
+        use crate::tui::config::KeyMap;
+        KeyMap::char().key($char).call()
+    }};
+    ($char:expr, $mod:expr) => {{
+        use crate::tui::config::KeyMap;
+        KeyMap::char().key($char).modifiers($mod).call()
+    }};
+}
+
+macro_rules! k_code {
+    ($code:expr) => {{
+        use crate::tui::config::KeyMap;
+        KeyMap::builder().key($code).build()
+    }};
+    ($char:expr, $mod:expr) => {{
+        use crate::tui::config::KeyMap;
+        KeyMap::builder().key($code).modifiers($mod).build()
+    }};
+}
+
+macro_rules! keymaps {
+    ($($act:expr => {$($map:expr),+$(,)*})+) => {{
+        use crate::tui::config::Keymaps;
+        let mut keymaps = Keymaps::new();
+        $(keymaps.insert($act, vec![$($map),+]);)+
+        keymaps
+    }};
+}
+
+pub fn default_keymaps() -> Keymaps {
+    use crate::tui::config::Action::*;
+    use crossterm::event::{KeyCode::*, KeyModifiers as M};
+
+    let keymaps = keymaps!(
+        SelectUp => {
+            c_code!('k'),
+            k_code!(Up),
         }
-      }
-    ],
-    "selectUp": [
-      {
-        "key": {
-          "Char": "k"
+        SelectDown => {
+            c_code!('j'),
+            k_code!(Down),
         }
-      },
-      {
-        "key": "Up"
-      }
-    ],
-    "selectDown": [
-      {
-        "key": {
-          "Char": "j"
+        FocusImages => {
+            c_code!('J'),
         }
-      },
-      {
-        "key": "Down"
-      }
-    ],
-    "pushImage": [
-      {
-        "key": {
-          "Char": "P"
+        FocusProjects => {
+            c_code!('K'),
         }
-      }
-    ],
-    "focusProjects": [
-      {
-        "key": {
-          "Char": "K"
+        PushImage => {
+            c_code!('P'),
         }
-      }
-    ],
-    "deleteImage": [
-      {
-        "key": {
-          "Char": "D"
+        DeleteImage => {
+            c_code!('D'),
         }
-      }
-    ],
-    "quit": [
-      {
-        "key": {
-          "Char": "c"
-        },
-        "modifiers": "CONTROL"
-      },
-      {
-        "key": {
-          "Char": "q"
+        FetchImages => {
+            c_code!('f'),
         }
-      }
-    ],
-    "closePopup": [
-      {
-        "key": {
-          "Char": "q"
+        PruneImages => {
+            c_code!('P'),
         }
-      },
-      { "key": "Enter" },
-      { "key": "Esc" }
-    ],
-    "fetchImages": [
-      {
-        "key": {
-          "Char": "f"
+        Quit => {
+            c_code!('c', M::CONTROL),
+            c_code!('q'),
         }
-      }
-    ],
-    "pruneImages": [
-      {
-        "key": {
-          "Char": "P"
+        ClosePopup => {
+            c_code!('c', M::CONTROL),
+            c_code!('q'),
         }
-      }
-    ]
-}"#;
+    );
+
+    keymaps
+}

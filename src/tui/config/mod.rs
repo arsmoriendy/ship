@@ -2,7 +2,7 @@ mod default_keymaps;
 
 use crate::{
     prelude::*,
-    tui::{actions::Action, config::default_keymaps::DEFAULT_KEYMAP_STR},
+    tui::{actions::Action, config::default_keymaps::default_keymaps},
 };
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
@@ -15,7 +15,7 @@ pub struct Config {
     pub registry_commands: HashMap<String, RegistryCommands>,
     #[serde(default)]
     pub command_behaviours: CommandBehaviours,
-    #[default(Config::default_keymaps().unwrap())]
+    #[default(default_keymaps())]
     #[serde(default)]
     pub keymaps: Keymaps,
 }
@@ -59,10 +59,6 @@ impl Config {
             .with_context(|| anyhow!("Failed to write to config file"))?;
 
         Ok(default_config)
-    }
-
-    pub fn default_keymaps() -> Result<Keymaps> {
-        Ok(serde_json::from_str(DEFAULT_KEYMAP_STR)?)
     }
 
     pub fn action_keymaps(&self, act: &Action) -> Result<&Vec<KeyMap>> {
@@ -124,11 +120,22 @@ pub enum CommandBehaviour {
     Interactive,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, Builder)]
 #[serde(rename_all = "camelCase")]
 pub struct KeyMap {
     pub key: KeyCode,
     pub modifiers: Option<KeyModifiers>,
+}
+
+#[bon]
+impl KeyMap {
+    #[builder]
+    pub fn char(key: char, modifiers: Option<KeyModifiers>) -> Self {
+        KeyMap::builder()
+            .key(KeyCode::Char(key))
+            .maybe_modifiers(modifiers)
+            .build()
+    }
 }
 
 impl From<(Option<KeyModifiers>, KeyCode)> for KeyMap {
