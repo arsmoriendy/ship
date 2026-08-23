@@ -71,6 +71,11 @@ impl AppState {
         self.config.project_registries.get(&project.name)
     }
 
+    pub fn try_get_selected_registry(&self) -> Result<&String> {
+        self.selected_registry()
+            .ok_or(anyhow!("Selected project has no configured registry"))
+    }
+
     pub fn selected_cmds(&self) -> Option<RegistryCommands> {
         let project = self.selected_project();
         let reg = self.config.project_registries.get(&project.name)?;

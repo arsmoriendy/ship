@@ -6,6 +6,7 @@ mod fetch_images;
 mod focus_images;
 mod focus_projects;
 mod prune_images;
+mod pull_image;
 mod push_image;
 mod quit;
 mod select_down;
@@ -19,6 +20,7 @@ pub enum Action {
     FocusImages,
     FocusProjects,
     PushImage,
+    PullImage,
     DeleteImage,
     FetchImages,
     PruneImages,
@@ -33,9 +35,10 @@ pub enum Action {
 
 pub const GLOBAL_ACTIONS: [Action; 3] = [Action::SelectUp, Action::SelectDown, Action::Quit];
 
-pub const IMAGE_ACTIONS: [Action; 3] = [
+pub const IMAGE_ACTIONS: [Action; 4] = [
     Action::FocusProjects,
     Action::PushImage,
+    Action::PullImage,
     Action::DeleteImage,
 ];
 

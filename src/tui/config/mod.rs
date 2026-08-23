@@ -108,6 +108,8 @@ pub struct CommandBehaviours {
     #[serde(default)]
     pub push_image: CommandBehaviour,
     #[serde(default)]
+    pub pull_image: CommandBehaviour,
+    #[serde(default)]
     pub delete_image: CommandBehaviour,
 }
 

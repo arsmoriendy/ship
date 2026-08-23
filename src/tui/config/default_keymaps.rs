@@ -53,6 +53,9 @@ pub fn default_keymaps() -> Keymaps {
         PushImage => {
             c_code!('P'),
         }
+        PullImage => {
+            c_code!('p'),
+        }
         DeleteImage => {
             c_code!('D'),
         }

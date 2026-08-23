@@ -12,9 +12,7 @@ add_app_action!(push_image, state, terminal, {
         return Err(anyhow!("Image already exist in remote registry"));
     };
     let image_id = encode_hex(image.id);
-    let reg = mtx
-        .selected_registry()
-        .ok_or(anyhow!("Selected project has no configured registry"))?;
+    let reg = mtx.try_get_selected_registry()?;
     let project_url = format!("{}/{}", reg, project.name);
 
     let behaviour = mtx.config.command_behaviours.push_image.clone();
