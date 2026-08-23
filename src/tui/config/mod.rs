@@ -98,8 +98,8 @@ impl Config {
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RegistryCommands {
-    pub delete_image: String,
-    pub list_images: String,
+    pub delete_remote_image: String,
+    pub fetch_images: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, SmartDefault)]
@@ -110,7 +110,7 @@ pub struct CommandBehaviours {
     #[serde(default)]
     pub pull_image: CommandBehaviour,
     #[serde(default)]
-    pub delete_image: CommandBehaviour,
+    pub delete_remote_image: CommandBehaviour,
 }
 
 #[derive(Deserialize, Serialize, Clone, Default)]

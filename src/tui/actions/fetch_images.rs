@@ -8,7 +8,7 @@ add_app_action!(fetch_images, state, {
     let mut cmd = mtx
         .selected_cmds()
         .ok_or(anyhow!("Unconfigured registry or registry commands"))?
-        .list_images
+        .fetch_images
         .clone();
 
     // replace fields

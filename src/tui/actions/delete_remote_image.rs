@@ -7,7 +7,7 @@ use crate::{
 add_app_action!(slf; delete_remote_image, terminal, {
     let mtx = slf.state.lock().await;
     let image = mtx.selected_image().clone();
-    let behaviour = mtx.config.command_behaviours.delete_image.clone();
+    let behaviour = mtx.config.command_behaviours.delete_remote_image.clone();
     drop(mtx);
 
     let Image::Local(image)=image else {return Err(anyhow!("Image is not local"))};
@@ -33,7 +33,7 @@ impl App {
         let cmd = mtx
             .selected_cmds()
             .ok_or(anyhow!("Unconfigured registry or registry commands"))?
-            .delete_image
+            .delete_remote_image
             .replace("{id}", &encode_hex(image.id))
             .replace("{repository}", &image.repository)
             .replace("{digest}", &encode_hex(digest));

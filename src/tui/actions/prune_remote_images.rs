@@ -8,7 +8,7 @@ add_app_action!(slf; prune_remote_images, terminal, {
         let Some(digest)=i.digest else {return None};
         if remote_images.iter().any(|ri|ri.digest==digest) {return Some(i)}else {None}
     }).collect();
-    let behaviour = mtx.config.command_behaviours.delete_image.clone();
+    let behaviour = mtx.config.command_behaviours.delete_remote_image.clone();
     drop(mtx);
 
     for image in &images {
