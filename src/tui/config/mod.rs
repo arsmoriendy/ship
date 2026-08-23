@@ -105,7 +105,6 @@ pub struct RegistryCommands {
 #[derive(Deserialize, Serialize, Clone, SmartDefault)]
 #[serde(rename_all = "camelCase")]
 pub struct CommandBehaviours {
-    #[default(CommandBehaviour::Interactive)]
     #[serde(default)]
     pub push_image: CommandBehaviour,
     #[serde(default)]
@@ -115,8 +114,8 @@ pub struct CommandBehaviours {
 #[derive(Deserialize, Serialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum CommandBehaviour {
-    #[default]
     Async,
+    #[default]
     Interactive,
 }
 
