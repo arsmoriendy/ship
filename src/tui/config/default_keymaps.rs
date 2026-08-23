@@ -59,7 +59,7 @@ pub fn default_keymaps() -> Keymaps {
         DeleteImage => {
             c_code!('D'),
         }
-        FetchImages => {
+        ListImages => {
             c_code!('f'),
         }
         PruneImages => {

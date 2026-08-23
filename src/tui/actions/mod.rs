@@ -2,9 +2,9 @@ use crate::prelude::*;
 
 mod close_popup;
 mod delete_image;
-mod fetch_images;
 mod focus_images;
 mod focus_projects;
+mod list_images;
 mod prune_images;
 mod pull_image;
 mod push_image;
@@ -22,7 +22,7 @@ pub enum Action {
     PushImage,
     PullImage,
     DeleteImage,
-    FetchImages,
+    ListImages,
     PruneImages,
     Quit,
     Noop,
@@ -42,10 +42,7 @@ pub const IMAGE_ACTIONS: [Action; 4] = [
     Action::DeleteImage,
 ];
 
-pub const PROJECT_ACTIONS: [Action; 3] = [
-    Action::FocusImages,
-    Action::FetchImages,
-    Action::PruneImages,
-];
+pub const PROJECT_ACTIONS: [Action; 3] =
+    [Action::FocusImages, Action::ListImages, Action::PruneImages];
 
 pub const POPUP_ACTIONS: [Action; 1] = [Action::ClosePopup];

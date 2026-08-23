@@ -116,7 +116,7 @@ impl App {
             Action::PushImage => self.push_image(terminal).await?,
             Action::PullImage => self.pull_image(terminal).await?,
             Action::DeleteImage => self.delete_image(terminal).await?,
-            Action::FetchImages => self.fetch_images().await?,
+            Action::ListImages => self.list_images().await?,
             Action::PruneImages => self.prune_images(terminal).await?,
             Action::Quit => self.quit().await?,
             _ => {}
