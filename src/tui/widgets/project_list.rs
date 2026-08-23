@@ -47,13 +47,6 @@ impl StatefulWidget for &mut ProjectList {
 
 impl Component<&mut AppState> for ProjectList {
     async fn handle_key_events(&mut self, ke: &KeyEvent, state: &mut AppState) -> Action {
-        state.config.match_actions(
-            ke,
-            &[
-                Action::FocusImages,
-                Action::FetchImages,
-                Action::PruneImages,
-            ],
-        )
+        state.config.match_actions(ke, &PROJECT_ACTIONS)
     }
 }

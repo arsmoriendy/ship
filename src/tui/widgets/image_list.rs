@@ -130,13 +130,6 @@ impl StatefulWidget for &mut ImageList {
 
 impl Component<&mut AppState> for ImageList {
     async fn handle_key_events(&mut self, ke: &KeyEvent, state: &mut AppState) -> Action {
-        state.config.match_actions(
-            ke,
-            &[
-                Action::FocusProjects,
-                Action::DeleteImage,
-                Action::PushImage,
-            ],
-        )
+        state.config.match_actions(ke, &IMAGE_ACTIONS)
     }
 }
