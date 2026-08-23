@@ -36,12 +36,12 @@ The config file lives at `~/.config/ship/config.json` (per platform conventions)
 
 ### Top-level fields
 
-| Field               | Type                      | Purpose                                                               |
-| ------------------- | ------------------------- | --------------------------------------------------------------------- |
-| `projectRegistries` | `map<project, registry>`  | Associates a project name with its registry[^1]                       |
-| `registryCommands`  | `map<registry, commands>` | Per-registry shell commands (`deleteImage`, `listImages`)[^2]         |
-| `commandBehaviours` | object                    | `pushImage`/`deleteImage`: `"async"` (default) or `"interactive"`[^3] |
-| `keymaps`           | `map<action, keymap[]>`   | Key bindings per action                                               |
+| Field               | Type                      | Purpose                                                                     |
+| ------------------- | ------------------------- | --------------------------------------------------------------------------- |
+| `projectRegistries` | `map<project, registry>`  | Associates a project name with its registry[^1]                             |
+| `registryCommands`  | `map<registry, commands>` | Per-registry shell commands (`deleteRemoteImage`, `fetchImages`)[^2]        |
+| `commandBehaviours` | object                    | `pushImage`/`deleteRemoteImage`: `"async"` (default) or `"interactive"`[^3] |
+| `keymaps`           | `map<action, keymap[]>`   | Key bindings per action                                                     |
 
 [^1]: E.g., `"projectRegistries": { "<project-name>": "<subdomain>.vultrcr.com/<registry>" }`
 
@@ -53,8 +53,8 @@ The config file lives at `~/.config/ship/config.json` (per platform conventions)
 
 Commands run via `sh -c` and support placeholders:
 
-- `deleteImage`: `{id}`, `{repository}`, `{digest}`
-- `listImages`: `{project}`
+- `deleteRemoteImage`: `{id}`, `{repository}`, `{digest}`
+- `fetchImages`: `{project}`
 
 ### Keymaps
 
@@ -64,7 +64,7 @@ Each action maps to an array of `{ "key": KeyCode, "modifiers"?: string }`. Keys
 "quit": [{ "key": { "Char": "c" }, "modifiers": "CONTROL" }]
 ```
 
-Available actions: `selectUp`, `selectDown`, `focusImages`, `focusProjects`, `pushImage`, `deleteImage`, `listImages`, `pruneImages`, `quit`, `closePopup`.
+Available actions: `selectUp`, `selectDown`, `focusImages`, `focusProjects`, `pushImage`, `deleteRemoteImage`, `fetchImages`, `pruneRemoteImages`, `quit`, `closePopup`.
 
 ## License
 
