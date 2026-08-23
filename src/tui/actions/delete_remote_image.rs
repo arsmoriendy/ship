@@ -4,7 +4,7 @@ use crate::{
     tui::{config::CommandBehaviour, external_command::ExternalCommand},
 };
 
-add_app_action!(slf; delete_image, terminal, {
+add_app_action!(slf; delete_remote_image, terminal, {
     let mtx = slf.state.lock().await;
     let image = mtx.selected_image().clone();
     let behaviour = mtx.config.command_behaviours.delete_image.clone();
@@ -13,15 +13,15 @@ add_app_action!(slf; delete_image, terminal, {
     let Image::Local(image)=image else {return Err(anyhow!("Image is not local"))};
 
     match behaviour {
-        CommandBehaviour::Async => slf._delete_image(&image, None).await?,
-        CommandBehaviour::Interactive => slf._delete_image(&image, Some(terminal)).await?
+        CommandBehaviour::Async => slf._delete_remote_image(&image, None).await?,
+        CommandBehaviour::Interactive => slf._delete_remote_image(&image, Some(terminal)).await?
     }
 
     Ok(())
 });
 
 impl App {
-    pub async fn _delete_image(
+    pub async fn _delete_remote_image(
         &self,
         image: &LocalImage,
         terminal: Option<&mut DefaultTerminal>,

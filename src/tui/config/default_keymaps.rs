@@ -56,13 +56,13 @@ pub fn default_keymaps() -> Keymaps {
         PullImage => {
             c_code!('p'),
         }
-        DeleteImage => {
+        DeleteRemoteImage => {
             c_code!('D'),
         }
-        ListImages => {
+        FetchImages => {
             c_code!('f'),
         }
-        PruneImages => {
+        PruneRemoteImages => {
             c_code!('P'),
         }
         Quit => {

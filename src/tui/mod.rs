@@ -115,9 +115,9 @@ impl App {
             Action::ClosePopup => self.close_popup().await?,
             Action::PushImage => self.push_image(terminal).await?,
             Action::PullImage => self.pull_image(terminal).await?,
-            Action::DeleteImage => self.delete_image(terminal).await?,
-            Action::ListImages => self.list_images().await?,
-            Action::PruneImages => self.prune_images(terminal).await?,
+            Action::DeleteRemoteImage => self.delete_remote_image(terminal).await?,
+            Action::FetchImages => self.fetch_images().await?,
+            Action::PruneRemoteImages => self.prune_remote_images(terminal).await?,
             Action::Quit => self.quit().await?,
             _ => {}
         };

@@ -3,7 +3,7 @@ use crate::{
     tui::external_command::ExternalCommand,
 };
 
-add_app_action!(list_images, state, {
+add_app_action!(fetch_images, state, {
     let mtx = state.lock().await;
     let mut cmd = mtx
         .selected_cmds()
