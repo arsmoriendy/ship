@@ -64,7 +64,7 @@ Each action maps to an array of `{ "key": KeyCode, "modifiers"?: string }`. Keys
 "quit": [{ "key": { "Char": "c" }, "modifiers": "CONTROL" }]
 ```
 
-Available actions: `selectUp`, `selectDown`, `focusImages`, `focusProjects`, `pushImage`, `deleteRemoteImage`, `fetchImages`, `pruneRemoteImages`, `quit`, `closePopup`.
+Available actions: `selectUp`, `selectDown`, `focusImages`, `focusProjects`, `pushImage`, `pullImage`, `deleteRemoteImage`, `fetchImages`, `pruneRemoteImages`, `quit`, `closePopup`.
 
 ## License
 
