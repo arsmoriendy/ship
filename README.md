@@ -54,7 +54,7 @@ and is auto-created with defaults on first run.
 | `ociCmd`            | `string`                  | Specifies the OCI command used. Defaults to `docker`.                                   |
 | `projectRegistries` | `map<project, registry>`  | Associates a project name with its registry[^1]                                         |
 | `registryCommands`  | `map<registry, commands>` | Per-registry shell commands (`deleteRemoteImage`, `fetchImages`)[^2]                    |
-| `commandBehaviours` | object                    | `pushImage`/`deleteRemoteImage`/`pullImage`: `"async"` (default) or `"interactive"`[^3] |
+| `commandBehaviours` | object                    | `pushImage`/`deleteRemoteImage`/`pullImage`: `"async"` or `"interactive"` (default)[^3] |
 | `keymaps`           | `map<action, keymap[]>`   | Key bindings per action                                                                 |
 
 [^1]:
