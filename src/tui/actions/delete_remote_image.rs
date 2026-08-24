@@ -34,8 +34,7 @@ impl App {
             .selected_cmds()
             .ok_or(anyhow!("Unconfigured registry or registry commands"))?
             .delete_remote_image
-            .replace("{id}", &encode_hex(image.id))
-            .replace("{repository}", &image.repository)
+            .replace("{project}", &project_name)
             .replace("{digest}", &encode_hex(digest));
         drop(mtx);
 

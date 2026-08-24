@@ -53,7 +53,7 @@ The config file lives at `~/.config/ship/config.json` (per platform conventions)
 
 Commands run via `sh -c` and support placeholders:
 
-- `deleteRemoteImage`: `{id}`, `{repository}`, `{digest}`
+- `deleteRemoteImage`: `{project}`, `{digest}`
 - `fetchImages`: `{project}`
 
 ### Keymaps
