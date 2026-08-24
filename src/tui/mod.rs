@@ -8,7 +8,6 @@ mod widgets;
 
 use crate::{
     prelude::*,
-    project::Project,
     store::Store,
     tui::{
         actions::Action,
@@ -29,12 +28,11 @@ pub struct App {
 
 impl App {
     pub fn new() -> Result<Self> {
-        let projects = Project::list()?;
         let config = Config::new()?;
         let store = Store::load()?;
 
         let mut state = AppState {
-            projects,
+            projects: vec![],
             config,
             store,
 
@@ -51,6 +49,7 @@ impl App {
         };
 
         state.sync_store_images();
+        state.projects = state.list_projects()?;
 
         Ok(App {
             root_component: RootWidget::new(),

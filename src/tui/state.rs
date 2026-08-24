@@ -1,5 +1,5 @@
 use crate::{
-    image::{Image, LocalImage},
+    image::{Image, LocalImage, RawLocalImage},
     project::Project,
     store::Store,
     tui::{
@@ -84,7 +84,7 @@ impl AppState {
     }
 
     pub fn refresh_projects(&mut self) -> Result<()> {
-        self.projects = Project::list()?;
+        self.projects = self.list_projects()?;
         self.sync_store_images();
         Ok(())
     }
@@ -123,5 +123,77 @@ impl AppState {
                 project.merge_remote_image(store_img);
             }
         }
+    }
+
+    pub fn list_images(&self) -> Result<Vec<LocalImage>> {
+        let res = cmd!(
+            self.get_oci_cmd(),
+            "image",
+            "list",
+            "--format",
+            "json",
+            "--no-trunc",
+            "--all",
+            "--digests"
+        )
+        .output()?;
+        if !res.status.success() {
+            String::from_utf8(res.stderr).with_context(|| "Failed parsing stderr")?;
+        }
+        let out = res.stdout;
+        let out_str = String::from_utf8(out).with_context(|| "Failed parsing stdout")?;
+        let mut img_strs = out_str.split("\n").peekable();
+
+        let mut images: Vec<LocalImage> = vec![];
+        loop {
+            if let Some(img_str) = img_strs.next()
+        // ignore last string, i.e, trailing "\n"
+            && img_strs.peek().is_some()
+            {
+                let raw = serde_json::from_str::<RawLocalImage>(img_str)
+                    .with_context(|| "Failed to parse image")?;
+                let id =
+                    parse_prefixed_sha256(&raw.id).with_context(|| "Failed to parse image id")?;
+                if let Some(img) = images.iter_mut().find(|img| img.id == id) {
+                    img.tags.insert(raw.tag);
+                    if img.digest.is_none() && raw.digest != "<none>" {
+                        img.digest = Some(parse_prefixed_sha256(raw.digest.as_str())?);
+                    }
+                } else {
+                    let parsed: LocalImage =
+                        (&raw).try_into().with_context(|| "Failed to parse image")?;
+                    let pos = match images.binary_search_by(|img| img.id.cmp(&parsed.id)) {
+                        Ok(p) => p,
+                        Err(p) => p,
+                    };
+                    images.insert(pos, parsed);
+                }
+                continue;
+            }
+            break;
+        }
+
+        Ok(images)
+    }
+
+    pub fn list_projects(&self) -> Result<Vec<Project>> {
+        let mut projects: Vec<Project> = vec![];
+        let images = self.list_images()?;
+        for img in images {
+            let repo = img.repository.clone();
+            let project_name = Project::get_project_name(repo.as_str())?;
+            if let Some(project) = projects.iter_mut().find(|p| p.name == project_name) {
+                project.images.push(Image::Local(img))
+            } else {
+                let mut new_project = Project::new(project_name);
+                new_project.images.push(Image::Local(img));
+                projects.push(new_project);
+            }
+        }
+        Ok(projects)
+    }
+
+    pub fn get_oci_cmd(&self) -> &str {
+        &self.config.oci_cmd
     }
 }

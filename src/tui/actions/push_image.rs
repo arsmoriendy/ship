@@ -16,6 +16,7 @@ add_app_action!(push_image, state, terminal, {
     let project_url = format!("{}/{}", reg, project.name);
 
     let behaviour = mtx.config.command_behaviours.push_image.clone();
+    let oci_cmd = mtx.get_oci_cmd().to_owned();
 
     drop(mtx);
 
@@ -30,9 +31,10 @@ add_app_action!(push_image, state, terminal, {
                 let st = state.clone();
                 let id_str = image_id.clone();
                 let project_name = project_name.clone();
+                let oci_cmd = oci_cmd.clone();
                 let handle: JoinHandle<Result<()>> = tokio::spawn(async move {
-                    docker!("image", "tag", &id_str, &tag_url).output()?;
-                    docker!("push", &tag_url).output()?;
+                    cmd!(&oci_cmd, "image", "tag", &id_str, &tag_url).output()?;
+                    cmd!(&oci_cmd, "push", &tag_url).output()?;
 
                     let mut mtx = st.lock().await;
                     mtx.refresh_projects()?;
@@ -49,10 +51,10 @@ add_app_action!(push_image, state, terminal, {
             }
             CommandBehaviour::Interactive => {
                 let _cmd = ExternalCommand::init(terminal);
-                docker!("image", "tag", &image_id, &tag_url)
+                cmd!(&oci_cmd, "image", "tag", &image_id, &tag_url)
                     .spawn()?
                     .wait()?;
-                docker!("push", &tag_url).spawn()?.wait()?;
+                cmd!(&oci_cmd, "push", &tag_url).spawn()?.wait()?;
                 mtx.refresh_projects()?;
                 let local_image = mtx.try_find_local_image_with_id(&project_name, &image.id)?;
                 let remote_image: RemoteImage = local_image.try_into()?;

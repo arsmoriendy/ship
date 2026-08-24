@@ -9,6 +9,8 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 #[derive(Deserialize, Serialize, Clone, SmartDefault)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
+    #[serde(default = "default_oci_cmd")]
+    pub oci_cmd: String,
     #[serde(default)]
     pub project_registries: HashMap<String, String>,
     #[serde(default)]
@@ -93,6 +95,10 @@ impl Config {
         }
         Action::Noop
     }
+}
+
+fn default_oci_cmd() -> String {
+    format!("docker")
 }
 
 #[derive(Deserialize, Serialize, Clone)]

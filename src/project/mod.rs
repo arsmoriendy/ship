@@ -10,7 +10,7 @@ pub struct Project {
 }
 
 impl Project {
-    fn new(name: &str) -> Self {
+    pub fn new(name: &str) -> Self {
         Project {
             name: name.to_owned(),
             images: vec![],
@@ -22,23 +22,6 @@ impl Project {
             "Failed parsing project name from repository: \"{}\"",
             repository
         ))
-    }
-
-    pub fn list() -> Result<Vec<Project>> {
-        let mut projects: Vec<Project> = vec![];
-        let images = LocalImage::list()?;
-        for img in images {
-            let repo = img.repository.clone();
-            let project_name = Project::get_project_name(repo.as_str())?;
-            if let Some(project) = projects.iter_mut().find(|p| p.name == project_name) {
-                project.images.push(Image::Local(img))
-            } else {
-                let mut new_project = Project::new(project_name);
-                new_project.images.push(Image::Local(img));
-                projects.push(new_project);
-            }
-        }
-        Ok(projects)
     }
 
     pub fn find_image_with_id(&self, id: &crate::image::Id) -> Option<&Image> {

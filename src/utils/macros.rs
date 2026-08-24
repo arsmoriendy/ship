@@ -1,6 +1,6 @@
-macro_rules! docker {
-    ($($args:expr),+) => {
-        Command::new("docker")
+macro_rules! cmd {
+    ($cmd:expr, $($args:expr),+) => {
+        Command::new($cmd)
             .args([$($args),+])
     };
 }

@@ -10,6 +10,7 @@ add_app_action!(pull_image, state, terminal, {
     let project_name = project.name.clone();
     let image = mtx.selected_image().clone();
     let behaviour = mtx.config.command_behaviours.pull_image.clone();
+    let oci_cmd = mtx.get_oci_cmd().to_owned();
     drop(mtx);
 
     let Image::Remote(remote_image) = image else {
@@ -30,8 +31,9 @@ add_app_action!(pull_image, state, terminal, {
 
             let st = state.clone();
             let full_image_name = full_image_name.clone();
+            let oci_cmd = oci_cmd.clone();
             let handle: JoinHandle<Result<()>> = tokio::spawn(async move {
-                docker!("pull", &full_image_name).output()?;
+                cmd!(&oci_cmd, "pull", &full_image_name).output()?;
 
                 let mut mtx = st.lock().await;
                 mtx.loading = None;
@@ -44,12 +46,13 @@ add_app_action!(pull_image, state, terminal, {
         }
         CommandBehaviour::Interactive => {
             let _cmd = ExternalCommand::init(terminal);
-            docker!("pull", &full_image_name).spawn()?.wait()?;
+            cmd!(&oci_cmd, "pull", &full_image_name).spawn()?.wait()?;
         }
     };
 
     for tag in remote_image.tags.iter().skip(1) {
-        docker!(
+        cmd!(
+            &oci_cmd,
             "tag",
             &full_image_name,
             &format!("{registry}/{project_name}:{tag}")
