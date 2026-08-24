@@ -36,12 +36,12 @@ The config file lives at `~/.config/ship/config.json` (per platform conventions)
 
 ### Top-level fields
 
-| Field               | Type                      | Purpose                                                                     |
-| ------------------- | ------------------------- | --------------------------------------------------------------------------- |
-| `projectRegistries` | `map<project, registry>`  | Associates a project name with its registry[^1]                             |
-| `registryCommands`  | `map<registry, commands>` | Per-registry shell commands (`deleteRemoteImage`, `fetchImages`)[^2]        |
-| `commandBehaviours` | object                    | `pushImage`/`deleteRemoteImage`: `"async"` (default) or `"interactive"`[^3] |
-| `keymaps`           | `map<action, keymap[]>`   | Key bindings per action                                                     |
+| Field               | Type                      | Purpose                                                                                 |
+| ------------------- | ------------------------- | --------------------------------------------------------------------------------------- |
+| `projectRegistries` | `map<project, registry>`  | Associates a project name with its registry[^1]                                         |
+| `registryCommands`  | `map<registry, commands>` | Per-registry shell commands (`deleteRemoteImage`, `fetchImages`)[^2]                    |
+| `commandBehaviours` | object                    | `pushImage`/`deleteRemoteImage`/`pullImage`: `"async"` (default) or `"interactive"`[^3] |
+| `keymaps`           | `map<action, keymap[]>`   | Key bindings per action                                                                 |
 
 [^1]: E.g., `"projectRegistries": { "<project-name>": "<subdomain>.vultrcr.com/<registry>" }`
 
